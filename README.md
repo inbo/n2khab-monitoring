@@ -12,7 +12,11 @@ _**The repo is under construction.**_
 
 ## Get started
 
-The repo is meant to fit the draft principles and setup in [this googlesheet](https://docs.google.com/spreadsheets/d/18U4AmiMnnApbgQTnfWbeZ3dAH3_4ISxUob_SX-maKV8), for long-term N2K-HAB projects.
+The repo is meant to fit the draft principles and setup in [this googlesheet](https://docs.google.com/spreadsheets/d/18U4AmiMnnApbgQTnfWbeZ3dAH3_4ISxUob_SX-maKV8), for long-term N2KHAB projects.
+
+### Repository structure
+
+Will be documented later.
 
 ### Organizing data
 
