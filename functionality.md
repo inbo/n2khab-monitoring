@@ -8,21 +8,23 @@ a:link, a:hover, a:active, a:visited {
 
 ### Table of Contents
 
-   * [Functionality and good practices](#functionality-and-good-practices)
-   * [1. Input data and high-level functions needed to achieve a sampling design and analysis results {#results}](#1-input-data-and-high-level-functions-needed-to-achieve-a-sampling-design-and-analysis-results-results)
-      * [1.1 Needed for drawing probability samples](#11-needed-for-drawing-probability-samples)
-      * [1.2 Needed for making a sampling frame](#12-needed-for-making-a-sampling-frame)
-      * [1.3 Needed for making the 'base' sampling frame](#13-needed-for-making-the-base-sampling-frame)
-      * [1.4 Needed for composing a temporary sampling schedule as a selection from a legacy judgment sample (existing measurement locations)](#14-needed-for-composing-a-temporary-sampling-schedule-as-a-selection-from-a-legacy-judgment-sample-existing-measurement-locations)
-      * [1.5 Needed for model-building in support of the design](#15-needed-for-model-building-in-support-of-the-design)
-      * [1.6 Needed for inferences (also relevant for inference simulations in the design stage)](#16-needed-for-inferences-also-relevant-for-inference-simulations-in-the-design-stage)
-   * [2. Data and intermediate functions, needed in support of the high-level functions](#intermediate)
-      * [2.1 Needed to obtain the attributes 'type' and the type's spatial proportion](#21-needed-to-obtain-the-attributes-type-and-the-types-spatial-proportion)
-      * [2.2 Needed for restricting the spatial target population for each monitoring scheme (target population restricting data)](#22-needed-for-restricting-the-spatial-target-population-for-each-monitoring-scheme-target-population-restricting-data)
-      * [2.3 Needed for defining relevant existing measurement locations with 'usefulness' attributes](#23-needed-for-defining-relevant-existing-measurement-locations-with-usefulness-attributes)
-      * [2.4 As a helper for several before-mentioned functions](#24-as-a-helper-for-several-before-mentioned-functions)
-   * [3. Further needed reading functions as a helper for several functions, mentioned before](#3-further-needed-reading-functions-as-a-helper-for-several-functions-mentioned-before)
-   
+   * [Functionality and good practices]
+   * [1. Input data and high-level functions needed to achieve a sampling design and analysis results]
+      * [1.1 Needed for drawing probability samples]
+      * [1.2 Needed for making sampling frames]
+      * [1.3 Needed for making the 'base' sampling frame]
+      * [1.4 Needed for composing a temporary sampling schedule as a selection from a legacy judgment sample (existing measurement locations)]
+      * [1.5 Needed for model-building in support of the design]
+      * [1.6 Needed for inferences (also relevant for inference simulations in the design stage)]
+   * [2. Data and intermediate functionality, needed in support of the high-level functions]
+      * [2.1 Needed to obtain the attributes 'type' and the type's spatial proportion]
+      * [2.2 Needed for restricting the spatial target population for each monitoring scheme (target population restricting data)]
+      * [2.3 Needed for defining relevant existing measurement locations with 'usefulness' attributes]
+      * [2.4 Intermediate-level helper functions]
+   * [3. Low-level helper functions]
+      * [Reading functions]
+      * [Functions needed for data housekeeping]
+      
 ## Functionality and good practices
 
 **Note: this document also applies to related n2khab repositories (mentioned below).**
@@ -42,7 +44,7 @@ See the [README](README.md) file!
 These names are irrespective of the actual dataversion, which also has an ID.
 There are some useful filter-views available in the google sheet.
 
-For further consideration: one way of sharing the functionality (and optionally, the included textual data) will be to distribute it as an R package. I.e. a user just types `library(n2khab-inputs)` to have all functionality available, instead of having to `source()` needed functions.
+For further consideration: one way of sharing the functionality (and optionally, the included textual data) will be to distribute it as an R package. I.e. a user just types `library(n2khab-inputs)` to have all functionality available, instead of having to `source()` needed functions. See [this issue](https://github.com/inbo/n2khab-inputs/issues/2) for more considerations.
 
 <DIV STYLE="background:#E8C3D58B;padding:10px">
 
@@ -66,7 +68,7 @@ _**XG3** in the below context refers to HG3 and/or LG3 (in piezometers)._
 </DIV>
 
 
-# 1. Input data and high-level functions needed to achieve a sampling design and analysis results {#results}
+# 1. Input data and high-level functions needed to achieve a sampling design and analysis results
 
 
 ## 1.1 Needed for drawing probability samples
@@ -343,7 +345,7 @@ _**Results of the dedicated writing workflow: to be written into repo n2khab-mne
 
 
 
-## 2.4 As a helper for several high-level functions
+## 2.4 Intermediate-level helper functions
 
 <DIV STYLE="background:#E8C3D58B;padding:10px">
 
@@ -356,7 +358,7 @@ _**Needed functions: in repo n2khab-inputs:**_
 - `evaluation_grid(resolution)`
     - i.e. a scaled up version (using `resolution`) of `GRTSmaster`
 - `soiltexture_coarse()`
-    takes a vector with soil type codes (character of factor) and converts this into a factor with three coarse texture classes (fine / coarse / peat)
+    - takes a vector with soil type codes (character of factor) and converts this into a factor with three coarse texture classes (fine / coarse / peat)
 
 
 _**Results: NOT to be written**_
@@ -378,7 +380,9 @@ _**Results: NOT to be written**_
 
 
 
-# 3. Reading functions as a helper to other functions
+# 3. Low-level helper functions
+
+## Reading functions
 
 To recall, reading functions typically return:
 
@@ -394,46 +398,45 @@ So, depending on the data source, it may require more than a `read_vc()` or `st_
 
 _**Needed functions: in repo n2khab-inputs:**_
 
-Reading input data:
-
-- `read_schemes(datadir)`
-- `read_types_per_scheme(datadir)`
-- `read_types_checklist(datadir)`
-- `read_GRTSmaster(datadir)` ^[If this is not feasible within R, an open GIS-backend needs to be called by R.]
-- `read_habitatmap(datadir)`
-    - returns spatial object and tidy dataframe, making use of `tidy_habitatmap()`
-- `read_watersurfaces(datadir)`
-- `read_habitatstreams(datadir)`
-- `read_flanders(datadir)`
-- `read_SACH(datadir)`
-- `read_biogeoregions(datadir)`
-- `read_ecoregions(datadir)`
-- `read_habitatdune(datadir)`
-- `read_soilmap(datadir)`
-- `read_mhq_terrestrial_locs(datadir)`
-- `read_mhq_lentic_locs(datadir)`
-- `read_mhq_lotic_locs(datadir)`
-- `read_groundwater_xg3(connection)`
-    - defines the query to be executed in the groundwater database, in order to extract metadata _and_ XG3 data
-    - it implements the following criteria:
-        - filter bottom no deeper than 3 meters below soil surface
-        - from piezometer couples, only the most shallow one is retained
-- `read_groundwater_chemistry(connection)`
-    - defines the query to be executed in the groundwater database, in order to extract metadata _and_ hydrochemical data
-    - it implements the following criteria:
-        - filter bottom no deeper than 3 meters below soil surface
-        - from piezometer couples, only the most shallow one is retained
+- For reading input data:
+    - `read_schemes(datadir)`
+    - `read_types_per_scheme(datadir)`
+    - `read_types_checklist(datadir)`
+    - `read_GRTSmaster(datadir)`
+        - if this is not feasible within R, an open GIS-backend needs to be called by R
+    - `read_habitatmap(datadir)`
+        - returns spatial object and tidy dataframe, making use of `tidy_habitatmap()`
+    - `read_watersurfaces(datadir)`
+    - `read_habitatstreams(datadir)`
+    - `read_flanders(datadir)`
+    - `read_SACH(datadir)`
+    - `read_biogeoregions(datadir)`
+    - `read_ecoregions(datadir)`
+    - `read_habitatdune(datadir)`
+    - `read_soilmap(datadir)`
+    - `read_mhq_terrestrial_locs(datadir)`
+    - `read_mhq_lentic_locs(datadir)`
+    - `read_mhq_lotic_locs(datadir)`
+    - `read_groundwater_xg3(connection)`
+        - defines the query to be executed in the groundwater database, in order to extract metadata _and_ XG3 data
+        - it implements the following criteria:
+            - filter bottom no deeper than 3 meters below soil surface
+            - from piezometer couples, only the most shallow one is retained
+    - `read_groundwater_chemistry(connection)`
+        - defines the query to be executed in the groundwater database, in order to extract metadata _and_ hydrochemical data
+        - it implements the following criteria:
+            - filter bottom no deeper than 3 meters below soil surface
+            - from piezometer couples, only the most shallow one is retained
         
-In some cases, reading generated data:
-
-- `read_terr_habitatmap(datadir)`
-    - loads the R objects, returned by `write_terr_habitatmap()`
-- `read_integrated_habitatmap(datadir)`
-    - loads the R objects, returned by `write_integrated_habitatmap()`
-- `read_samplingframe(datadir)`
-    - loads the R object, returned by `write_samplingframe()`
-- `read_base_samplingframe(datadir)`
-    - loads the R object, returned by `write_base_samplingframe()`
+- In some cases, for reading generated data:
+    - `read_terr_habitatmap(datadir)`
+        - loads the R objects, returned by `write_terr_habitatmap()`
+    - `read_integrated_habitatmap(datadir)`
+        - loads the R objects, returned by `write_integrated_habitatmap()`
+    - `read_samplingframe(datadir)`
+        - loads the R object, returned by `write_samplingframe()`
+    - `read_base_samplingframe(datadir)`
+        - loads the R object, returned by `write_base_samplingframe()`
 
 _**Results: NOT to be written**_
 
@@ -453,6 +456,64 @@ _**Needed functions: in inborutils package:**_
 _**Results: NOT to be written**_
 
 </DIV>
+
+
+## Functions needed for data housekeeping
+
+Workflows (in no matter which repo) will depend on the user that places data in the right location, and most of all: _the **right** data_ in the right location.
+
+The following things are therefore needed :
+
+- in _n2khab-inputs_:
+    - `datasources`: tabular file that defines data sources (mirrors worksheet 'data sources' in [this googlesheet](https://docs.google.com/spreadsheets/d/1E8ERlfYwP3OjluL8d7_4rR1W34ka4LRCE35JTxf3WMI/edit#gid=0)): attributes like ID, n2khab-repo, data owner, authorative source location, relative local path where data is to be expected.
+    - `dataversions` (in _n2khab-inputs_): tabular file that defines data versions (mirrors worksheet 'data source versions in [this googlesheet](https://docs.google.com/spreadsheets/d/1E8ERlfYwP3OjluL8d7_4rR1W34ka4LRCE35JTxf3WMI/edit#gid=1017627684)): attributes like sourceID, versionID, authorative source location, fileserver data path, **filename**, **checksum**.
+    - a housekeeping workflow that updates `datasources` and `dataversions`, and which should be run on a regular basis
+- in each repo where data processing is done (analysis repositories and _n2khab-inputs_):
+    - `datalist_chosen`: a tabular file that clearly defines which data sources and versions thereof are needed (the file is versioned in the respective repo)
+    - a housekeeping workflow that checks whether the right data are present, as defined by `datalist_chosen`, and which should be run on a regular basis
+
+
+
+<DIV STYLE="background:#E8C3D58B;padding:10px">
+
+_**Needed functions: in repo n2khab-inputs:**_
+
+- functions that keep `datasources` and `dataversions` in sync with the mirror google sheet:
+    - `write_datasources(outputdir)`
+    - `write_dataversions(outputdir)`
+    
+_**Dedicated writing workflow (scripts/Rmarkdown): in repo n2khab-inputs**_
+
+_**Results of the dedicated writing workflow: to be written into repo n2khab-inputs**_
+
+</DIV>
+
+<br/>
+
+<DIV STYLE="background:#E8C3D58B;padding:10px">
+
+_**Needed functions: in repo n2khab-inputs plus other repos with data processing:**_
+
+- `check_inputdata(hashes, root, checksumdelay=14*24*3600)`
+    - checks data presence, data version and integrity, cf. the functionality described [here](https://docs.google.com/spreadsheets/d/18U4AmiMnnApbgQTnfWbeZ3dAH3_4ISxUob_SX-maKV8/edit#gid=0&range=B74)
+    - it generates, next to each file, a metadata file and, under certain conditions, a checksum file
+    - it checks the current metadata against the metadata file and it checks the checksum against the checksum in the `hashes` dataframe, which is to be generated from `datalist_chosen`, `dataversions` and `datasources`
+    - it reports to the user
+
+_**Results: NOT to be written**_
+
+</DIV>
+
+
+
+
+
+
+
+
+
+
+
 
 
 
