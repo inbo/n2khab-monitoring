@@ -1,22 +1,22 @@
 ### Table of Contents
 
-   * [Functionality and good practices]
-   * [1. Input data and high-level functions needed to achieve a sampling design and analysis results]
-      * [1.1 Needed for drawing probability samples]
-      * [1.2 Needed for making sampling frames]
-      * [1.3 Needed for making the 'base' sampling frame]
-      * [1.4 Needed for composing a temporary sampling schedule as a selection from a legacy judgment sample (existing measurement locations)]
-      * [1.5 Needed for model-building in support of the design]
-      * [1.6 Needed for inferences (also relevant for inference simulations in the design stage)]
-   * [2. Data and intermediate functionality, needed in support of the high-level functions]
-      * [2.1 Needed to obtain the attributes 'type' and the type's spatial proportion]
-      * [2.2 Needed for restricting the spatial target population for each monitoring scheme (target population restricting data)]
-      * [2.3 Needed for defining relevant existing measurement locations with 'usefulness' attributes]
-      * [2.4 Intermediate-level helper functions]
-   * [3. Low-level helper functions]
-      * [Reading functions]
-      * [Functions needed for data housekeeping]
-      
+   * [Functionality and good practices](#functionality-and-good-practices)
+   * [1. Input data and high-level functions needed to achieve a sampling design and analysis results](#1-input-data-and-high-level-functions-needed-to-achieve-a-sampling-design-and-analysis-results)
+      * [1.1 Needed for drawing probability samples](#11-needed-for-drawing-probability-samples)
+      * [1.2 Needed for making sampling frames](#12-needed-for-making-sampling-frames)
+      * [1.3 Needed for making the 'base' sampling frame](#13-needed-for-making-the-base-sampling-frame)
+      * [1.4 Needed for composing a temporary sampling schedule as a selection from a legacy judgment sample (existing measurement locations)](#14-needed-for-composing-a-temporary-sampling-schedule-as-a-selection-from-a-legacy-judgment-sample-existing-measurement-locations)
+      * [1.5 Needed for model-building in support of the design](#15-needed-for-model-building-in-support-of-the-design)
+      * [1.6 Needed for inferences (also relevant for inference simulations in the design stage)](#16-needed-for-inferences-also-relevant-for-inference-simulations-in-the-design-stage)
+   * [2. Data and intermediate functionality, needed in support of the high-level functions](#intermediate)
+      * [2.1 Needed to obtain the attributes 'type' and the type's spatial proportion](#21-needed-to-obtain-the-attributes-type-and-the-types-spatial-proportion)
+      * [2.2 Needed for restricting the spatial target population for each monitoring scheme (target population restricting data)](#22-needed-for-restricting-the-spatial-target-population-for-each-monitoring-scheme-target-population-restricting-data)
+      * [2.3 Needed for defining relevant existing measurement locations with 'usefulness' attributes](#23-needed-for-defining-relevant-existing-measurement-locations-with-usefulness-attributes)
+      * [2.4 Intermediate-level helper functions](#24-intermediate-level-helper-functions)
+   * [3. Low-level helper functions](#3-low-level-helper-functions)
+      * [Reading functions](#reading-functions)
+      * [Functions needed for data housekeeping](#functions-needed-for-data-housekeeping)      
+
 ## Functionality and good practices
 
 **Note: this document also applies to related n2khab repositories (mentioned below).**
