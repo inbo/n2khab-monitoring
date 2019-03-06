@@ -1,11 +1,3 @@
-<style type="text/css">
-
-a:link, a:hover, a:active, a:visited {
-    color:#C04384;
-}
-
-</style>
-
 ### Table of Contents
 
    * [Functionality and good practices]
