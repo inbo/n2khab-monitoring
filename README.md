@@ -6,46 +6,53 @@ The repo is set up with a special interest in the design, review and analysis of
 - MNE: monitoring programme for the natural environment
 - MHQ: monitoring programme for biotic habitat quality
 
-**The repo is under construction.**
+_The ultimate aim is to achieve open and reproducible data workflows. That is a prerequisite for qualifyable science, for sharing and for broad cooperation._
 
-## Principles and guidelines
+_**The repo is under construction.**_
+
+## Get started
 
 The repo is meant to fit the draft principles and setup in [this googlesheet](https://docs.google.com/spreadsheets/d/18U4AmiMnnApbgQTnfWbeZ3dAH3_4ISxUob_SX-maKV8), for long-term N2K-HAB projects.
 
 ### Organizing data
 
 Regarding binary or text-format data: see [this list (under construction)](https://docs.google.com/spreadsheets/d/1E8ERlfYwP3OjluL8d7_4rR1W34ka4LRCE35JTxf3WMI) for metadata on dataset versions and for their source location.
+There are some useful filter-views available in this google sheet.
 
-The data, or the results of dataset-specific reading functions, are as much as possible internationalized:
+The data, or the results of dataset-specific reading functions, are [tidied](https://r4ds.had.co.nz/tidy-data.html#tidy-data-1) and as much as possible internationalized:
 
 - English names for types, environmental pressures, ...;
 - English names for table headings (dataframe variables).
 
-All `read_xxx()` functions in this repo read data from local folders:
+All `read_xxx()` functions in this repo read data from local folders.
+To be able to reproduce the workflows (scripts and markdown files) that reside in the other n2khab-repositories, some conventions are needed on the location of these folders:
 
-- binary data sources are present in `../n2khab-binarydata` (this means that a folder `n2khab-binarydata` exists _next to this repository_).
-These may also include _large_ text-format files, such as large rasters.
-For the sake and ease of reproducibility, this folder may be uploaded to Zenodo as a whole once in a while (a few, yet unpublished datasets may also be published separately.)
-Perhaps some datasets will receive a versioning system in the future, such as git LFS, if there is reason to suspect that the used versions will not be maintained in the source location in the long term.
+- data sources in **text-format (not too large)** are _versioned_ within this repository, in one or at most two folders:
+    - `data/10_raw`: local copies of text-format **inputdata** versions are to be put here.
+    Some of them come over from another repository; others may be written as the result of a synchronization script to give them a start;
+    - (`data/20_processed`: generated text-format data can be put here by code.
+    _Up to now, there are no such data expected, so this instruction only serves as a reference when needed._)
+- **binary** data sources are present in `../n2khab-binarydata` (this means that a folder `n2khab-binarydata` exists _next to this repository_).
+These may also include **_large_ text-format** files, such as rasters.
+For the sake and ease of reproducibility, this folder may be uploaded to Zenodo as a whole once in a while (a few, yet unpublished datasets may also be published separately on Zenodo).
+As could be the case for the repo itself.
+Perhaps some binary datasets will receive a versioning system in the future, such as git LFS, if there is reason to suspect that the used versions will not be maintained in the source location in the long term.
 The sources are supposed to be divided as:
-    - `../n2khab-binarydata/10_input`: local copies of binary inputdata versions are to be put here;
-    - `../n2khab-binarydata/20_generated`: generated binary data are put here by the code;
-- data sources in text-format (not too large) are _versioned_ within this repository, in two folders:
-    - `10_inputdata_textformat`: local copies of text-format inputdata versions are to be put here. Most of them come over from another repository;
-    - `20_generateddata_textformat`: generated text-format data are put here by the code.
+    - `../n2khab-binarydata/10_raw`: local copies of binary inputdata versions are to be put here;
+    - `../n2khab-binarydata/20_processed`: generated binary data are put here by scripts;
     
 Each dataset is to be put in its *own subfolder* within one of the above folders.
 The name of the subfolder is a fixed code (ID) according to the aforementioned [list](https://docs.google.com/spreadsheets/d/1E8ERlfYwP3OjluL8d7_4rR1W34ka4LRCE35JTxf3WMI).
 As far as possible, the corresponding file(s) get the same name.
 
-How we distribute the data internally within the organisation is rougly documented in the [draft principles and setup googlesheet](https://docs.google.com/spreadsheets/d/18U4AmiMnnApbgQTnfWbeZ3dAH3_4ISxUob_SX-maKV8). The aim is to avoid the need for everyone to download each separate dataset from the authorative source location.
+How we distribute the data internally within the organisation is roughly documented in the [draft principles and setup googlesheet](https://docs.google.com/spreadsheets/d/18U4AmiMnnApbgQTnfWbeZ3dAH3_4ISxUob_SX-maKV8). The aim is to avoid the need for everyone to download each separate dataset from the authorative source location.
 
-### Writing functions
+### Writing functions and workflows
 
 See the separate [document](functionality.md) on needed functionality.
 
 
-### R packages
+### Preferred R packages
 
 - please use `tidyverse`, `sf` and `raster` packages for data reading and ([pipe](https://r4ds.had.co.nz/pipes.html#when-not-to-use-the-pipe-friendly)-friendly) processing.
 Organise data in R in a [tidy](https://r4ds.had.co.nz/tidy-data.html#tidy-data-1) way.
