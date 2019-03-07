@@ -20,7 +20,7 @@
       
 ## Functionality and good practices
 
-**Note: this document also applies to related n2khab repositories (mentioned below).**
+**Note: this document also applies to related n2khab repositories (mentioned below). [This picture](https://drive.google.com/open?id=1RQsjxch0YKdqJSPIDjCG_wEbYTlP3oDv) shows their relations.**
 
 - data (pre)processing is to be reproducible, and is therefore defined by:
     - R-functions that aim at standardized data-reading, data-conversions etc., with arguments for undecided aspects that the user can set (including also, the directory of the dataset)
