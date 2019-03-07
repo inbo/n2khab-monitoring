@@ -307,7 +307,7 @@ _**Results: NOT to be written**_
 
 <DIV STYLE="background:#E8C3D58B;padding:10px">
 
-_**Needed functions: in repo n2khab-inputs:**_
+_**Needed functions: in repo inborutils:**_
 
 - `qualify_groundwater_sites(xg3_metadata, xg3_data, chemistry_metadata, chemistry_data)`
     - the input objects conform to the formats returned by `read_groundwater_xg3()` and `read_groundwater_chemistry()` (see part 3)
@@ -323,6 +323,17 @@ _**Needed functions: in repo n2khab-inputs:**_
 - `spatialjoin_groundwater_sites(object, topological_criterion, groundwater_sites)`
     - takes a spatial R object (e.g. `soilmap`, `terr_habitatmap`, `integrated_habitatmap`) and uses a `topological_criterion` (e.g. intersect with buffer around piezometers with radius x) to make a spatial join with a spatial object `groundwater_sites` as returned by `qualify_groundwater_sites()`
     - returns a tidy dataframe (hereafter named `groundwater_joinedattributes`) with piezometer IDs and the joined attributes (as buffers may be used, a long format is necessary)
+
+_**Results: NOT to be written**_
+
+</DIV>
+
+<br/>
+
+<DIV STYLE="background:#E8C3D58B;padding:10px">
+
+_**Needed functions: in repo n2khab-inputs:**_
+
 - `filter_groundwater_sites(groundwater_sites, groundwater_joinedattributes, scheme, usefulness)`
     - combines the spatial object returned by `qualify_groundwater_sites()` with a dataframe, returned by `spatialjoin_groundwater_sites()` and which provides type & type attributes, and restricts the result:
         - according to the types and optional spatial restrictions as imposed by the specified MNE-`scheme`;
