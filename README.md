@@ -10,13 +10,9 @@ _The ultimate aim is to achieve open and reproducible data workflows. That is a 
 
 _**The repo is under construction.**_
 
-## Get started
+## Getting started
 
 The repo is meant to fit the draft principles and setup in [this googlesheet](https://docs.google.com/spreadsheets/d/18U4AmiMnnApbgQTnfWbeZ3dAH3_4ISxUob_SX-maKV8), for long-term N2KHAB projects.
-
-### Repository structure
-
-Will be documented later.
 
 ### Organizing data
 
@@ -56,20 +52,26 @@ How we distribute the data internally within the organisation is roughly documen
 See the separate [document](functionality.md) on needed functionality.
 
 
-### Preferred R packages
+### Find your way: repository structure
 
-- please use `tidyverse`, `sf` and `raster` packages for data reading and ([pipe](https://r4ds.had.co.nz/pipes.html#when-not-to-use-the-pipe-friendly)-friendly) processing.
-Organise data in R in a [tidy](https://r4ds.had.co.nz/tidy-data.html#tidy-data-1) way.
+To be documented; some considerations are pending.
+
+
+### Coding style: it's never too late for learning!
+
+- please use `tidyverse`, `sf` and `raster` packages for data reading.
+Discover the human-friendly way of coding a data processing pipeline through the use of [pipes](https://r4ds.had.co.nz/pipes.html#when-not-to-use-the-pipe-friendly)-friendly)!
+Organise data in R in a [tidy](https://r4ds.had.co.nz/tidy-data.html#tidy-data-1) way in order to avoid troubles later on.
 Recommended resources to get started are:
     - [R for Data Science](https://r4ds.had.co.nz/)
     - [Geocomputation with R](https://geocompr.robinlovelace.net)
 - preferrably use `git2rdata::write_vc()` when an R _dataframe_ needs to be written to disk for later use (see <https://inbo.github.io/git2rdata/>).
 Define the sorting order well (avoid ties) by using the `sorting` argument, in order to get meaningful _diffs_ when data are updated later.
 The function stores the object in a version-control + R friendly format (tab separated values (.tsv) plus metadata on sorting order and variables (.yml)).
-The R object can then be 100% recreated using `git2rdata::read_vc()`.
+The R object can then be 100% recreated using `git2rdata::read_vc()`!!
 
 
-### How to contribute code?
+### How can I contribute code?
 
 More detailed info on git workflows at INBO: <https://inbo.github.io/tutorials/tags/git/>
 
