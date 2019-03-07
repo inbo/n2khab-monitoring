@@ -57,10 +57,10 @@ See the separate [document](functionality.md) on needed functionality.
 To be documented; some considerations are pending.
 
 
-### Coding style: it's never too late for learning!
+### Coding tools: it's never too late for learning!
 
 - please use `tidyverse`, `sf` and `raster` packages for data reading.
-Discover the human-friendly way of coding a data processing pipeline through the use of [pipes](https://r4ds.had.co.nz/pipes.html#when-not-to-use-the-pipe-friendly)-friendly)!
+Discover the human-friendly way of coding a data processing pipeline through the use of [pipes](https://r4ds.had.co.nz/pipes.html)!
 Organise data in R in a [tidy](https://r4ds.had.co.nz/tidy-data.html#tidy-data-1) way in order to avoid troubles later on.
 Recommended resources to get started are:
     - [R for Data Science](https://r4ds.had.co.nz/)
