@@ -14,9 +14,10 @@
       * [2.3 Needed for defining relevant existing measurement locations with 'usefulness' attributes](#23-needed-for-defining-relevant-existing-measurement-locations-with-usefulness-attributes)
       * [2.4 Intermediate-level helper functions](#24-intermediate-level-helper-functions)
    * [3. Low-level helper functions](#3-low-level-helper-functions)
-      * [Reading functions](#reading-functions)
-      * [Functions needed for data housekeeping](#functions-needed-for-data-housekeeping)      
-
+      * [3.1 Needed for reading data](#31-needed-for-reading-data)
+      * [3.2 Needed for data checking](#32-needed-for-data-checking)
+      * [3.3 Needed for data definition](#33-needed-for-data-definition)
+      
 ## Functionality and good practices
 
 **Note: this document also applies to related n2khab repositories (mentioned below).**
@@ -374,13 +375,12 @@ _**Results: NOT to be written**_
 
 # 3. Low-level helper functions
 
-## 3.1 Reading functions
+## 3.1 Needed for reading data
 
-To recall, reading functions typically return:
+To recall, `read_xxx()` functions typically return:
 
 - tidy formatted data (which may mean that a spatial dataset is to be kept separate from long-formatted attributes).
-    - please, _generalize the tidying-part_ within a separate `tidy_xxx(object)` function and place that function (only) in the [inborutils](https://github.com/inbo/inborutils) package.
-    While the `read_xxx()` functions are tailored towards dataset needs for n2khab-monitoring, the tidying part is typically of general interest.
+    - While several `read_xxx()` functions refer to data that are more specific to n2khab-monitoring, other `read_xxx()` functions have broader interest. Therefore, place the latter (only) in the [inborutils](https://github.com/inbo/inborutils) package.
 - data with English variable names and labels of identifiers (such as types, pressures, ...)
 - omit unneeded variables for n2khab projects
 
@@ -396,29 +396,10 @@ _**Needed functions: in repo n2khab-inputs:**_
     - `read_types_checklist(datadir)`
     - `read_GRTSmaster(datadir)`
         - if this is not feasible within R, an open GIS-backend needs to be called by R
-    - `read_habitatmap(datadir)`
-        - returns spatial object and tidy dataframe, making use of `tidy_habitatmap()`
-    - `read_watersurfaces(datadir)`
-    - `read_habitatstreams(datadir)`
-    - `read_flanders(datadir)`
-    - `read_SACH(datadir)`
-    - `read_biogeoregions(datadir)`
-    - `read_ecoregions(datadir)`
     - `read_habitatdune(datadir)`
-    - `read_soilmap(datadir)`
     - `read_mhq_terrestrial_locs(datadir)`
     - `read_mhq_lentic_locs(datadir)`
     - `read_mhq_lotic_locs(datadir)`
-    - `read_groundwater_xg3(connection)`
-        - defines the query to be executed in the groundwater database, in order to extract metadata _and_ XG3 data
-        - it implements the following criteria:
-            - filter bottom no deeper than 3 meters below soil surface
-            - from piezometer couples, only the most shallow one is retained
-    - `read_groundwater_chemistry(connection)`
-        - defines the query to be executed in the groundwater database, in order to extract metadata _and_ hydrochemical data
-        - it implements the following criteria:
-            - filter bottom no deeper than 3 meters below soil surface
-            - from piezometer couples, only the most shallow one is retained
         
 - In some cases, for reading generated data:
     - `read_terr_habitatmap(datadir)`
@@ -440,10 +421,26 @@ _**Results: NOT to be written**_
 
 _**Needed functions: in inborutils package:**_
 
-- `tidy_habitatmap(object)`
-    - returns spatial object and tidy dataframe
-- `tidy_xxx(object)`
-    - for other reference layers which can use tidying
+- For reading input data:
+    - `read_habitatmap(datadir)`
+        - returns spatial object and tidy dataframe
+    - `read_watersurfaces(datadir)`
+    - `read_habitatstreams(datadir)`
+    - `read_flanders(datadir)`
+    - `read_SACH(datadir)`
+    - `read_biogeoregions(datadir)`
+    - `read_ecoregions(datadir)`
+    - `read_soilmap(datadir)`
+    - `read_groundwater_xg3(connection, selection)`
+        - defines the query to be executed in the groundwater database, in order to extract metadata _and_ XG3 data
+        - it implements criteria, which can be given by a dataframe argument `selection`:
+            - maximum filter bottom depth as meters below soil surface (workflow implementation: at most 3 meters below soil surface)
+            - from piezometer couples, which to retain (workflow implementation: only the most shallow one)
+    - `read_groundwater_chemistry(connection, selection)`
+        - defines the query to be executed in the groundwater database, in order to extract metadata _and_ hydrochemical data
+        - it implements criteria, which can be given by a dataframe argument `selection`:
+            - maximum filter bottom depth as meters below soil surface (workflow implementation: at most 3 meters below soil surface)
+            - from piezometer couples, which to retain (workflow implementation: only the most shallow one)
 
 _**Results: NOT to be written**_
 
