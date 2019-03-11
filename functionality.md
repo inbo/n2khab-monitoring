@@ -2,21 +2,21 @@
 
    * [Functionality and good practices](#functionality-and-good-practices)
    * [1. Input data and high-level functions needed to achieve a sampling design and analysis results](#1-input-data-and-high-level-functions-needed-to-achieve-a-sampling-design-and-analysis-results)
-      * [1.1 Needed for drawing probability samples](#11-needed-for-drawing-probability-samples)
-      * [1.2 Needed for making sampling frames](#12-needed-for-making-sampling-frames)
-      * [1.3 Needed for making the 'base' sampling frame](#13-needed-for-making-the-base-sampling-frame)
-      * [1.4 Needed for composing a temporary sampling schedule as a selection from a legacy judgment sample (existing measurement locations)](#14-needed-for-composing-a-temporary-sampling-schedule-as-a-selection-from-a-legacy-judgment-sample-existing-measurement-locations)
-      * [1.5 Needed for model-building in support of the design](#15-needed-for-model-building-in-support-of-the-design)
-      * [1.6 Needed for inferences (also relevant for inference simulations in the design stage)](#16-needed-for-inferences-also-relevant-for-inference-simulations-in-the-design-stage)
+      * [1.1 drawing probability samples](#11-needed-for-drawing-probability-samples)
+      * [1.2 making sampling frames](#12-needed-for-making-sampling-frames)
+      * [1.3 making the 'base' sampling frame](#13-needed-for-making-the-base-sampling-frame)
+      * [1.4 composing a temporary sampling schedule as a selection from a legacy judgment sample (existing measurement locations)](#14-needed-for-composing-a-temporary-sampling-schedule-as-a-selection-from-a-legacy-judgment-sample-existing-measurement-locations)
+      * [1.5 model-building in support of the design](#15-needed-for-model-building-in-support-of-the-design)
+      * [1.6 inferences (also relevant for inference simulations in the design stage)](#16-needed-for-inferences-also-relevant-for-inference-simulations-in-the-design-stage)
    * [2. Data and intermediate functionality, needed in support of the high-level functions](#intermediate)
       * [2.1 Needed to obtain the attributes 'type' and the type's spatial proportion](#21-needed-to-obtain-the-attributes-type-and-the-types-spatial-proportion)
-      * [2.2 Needed for restricting the spatial target population for each monitoring scheme (target population restricting data)](#22-needed-for-restricting-the-spatial-target-population-for-each-monitoring-scheme-target-population-restricting-data)
-      * [2.3 Needed for defining relevant existing measurement locations with 'usefulness' attributes](#23-needed-for-defining-relevant-existing-measurement-locations-with-usefulness-attributes)
+      * [2.2 restricting the spatial target population for each monitoring scheme (target population restricting data)](#22-needed-for-restricting-the-spatial-target-population-for-each-monitoring-scheme-target-population-restricting-data)
+      * [2.3 defining relevant existing measurement locations with 'usefulness' attributes](#23-needed-for-defining-relevant-existing-measurement-locations-with-usefulness-attributes)
       * [2.4 Intermediate-level helper functions](#24-intermediate-level-helper-functions)
    * [3. Low-level helper functions](#3-low-level-helper-functions)
-      * [3.1 Needed for reading data](#31-needed-for-reading-data)
-      * [3.2 Needed for data checking](#32-needed-for-data-checking)
-      * [3.3 Needed for data definition](#33-needed-for-data-definition)
+      * [3.1 reading data](#31-needed-for-reading-data)
+      * [3.2 data checking](#32-needed-for-data-checking)
+      * [3.3 data definition](#33-needed-for-data-definition)
       
 ## Functionality and good practices
 
@@ -64,7 +64,7 @@ _**XG3** in the below context refers to HG3 and/or LG3 (in piezometers)._
 # 1. Input data and high-level functions needed to achieve a sampling design and analysis results
 
 
-## 1.1 Needed for drawing probability samples
+## 1.1 drawing probability samples
 
 (Only briefly considered for now.)
 
@@ -83,7 +83,7 @@ _**Results: to be written into repo n2khab-mne-design / n2khab-mhq-design, or in
 
 </DIV>
     
-## 1.2 Needed for making sampling frames
+## 1.2 making sampling frames
 
 - `base_samplingframe`: a 'base' sampling frame (see 1.3) that does not distinguish between monitoring schemes, but instead provides the unioned spatial target population for the monitoring schemes of MHQ and/or MNE;
 - _target population restricting data_ (see 2.2): information that complements the 'base' sampling frame, in order to restrict the spatial target population for each monitoring scheme and completely define the respective target populations.
@@ -101,7 +101,7 @@ _**Results: to be written into repo n2khab-samplingframes**_
 </DIV>
 
 
-## 1.3 Needed for making the 'base' sampling frame
+## 1.3 making the 'base' sampling frame
 
 A 'base' sampling frame is implemented as a unioned **dataframe** of the spatial target populations of the respective types (for all monitoring schemes of MNE or MHQ as a whole).
 Each row represents a spatial unit that belongs to the target population of one type.
@@ -140,7 +140,7 @@ _**Results: to be written into repo n2khab-samplingframes**_
 </DIV>
 
 
-## 1.4 Needed for composing a temporary sampling schedule as a selection from a legacy judgment sample (existing measurement locations)
+## 1.4 composing a temporary sampling schedule as a selection from a legacy judgment sample (existing measurement locations)
 
 (Cf. chapter 6 of [this](https://drive.google.com/open?id=1OlLCdEAvWOelzXeTytqsuKfcw7B3HQov) report -- in Dutch.)
 
@@ -168,7 +168,7 @@ _**Results: to be written into repo n2khab-mne-design**_
 </DIV>
 
 
-## 1.5 Needed for model-building in support of the design
+## 1.5 model-building in support of the design
 
 (Cf. chapter 7 of [this](https://drive.google.com/open?id=1OlLCdEAvWOelzXeTytqsuKfcw7B3HQov) report -- in Dutch.)
 
@@ -183,7 +183,7 @@ _**Results: to be written into repo n2khab-mne-design**_
     - etc.
    
    
-## 1.6 Needed for inferences (also relevant for inference simulations in the design stage)
+## 1.6 inferences (also relevant for inference simulations in the design stage)
 
 (Cf. chapter 9 of [this](https://drive.google.com/open?id=1OlLCdEAvWOelzXeTytqsuKfcw7B3HQov) report -- in Dutch.)
 
@@ -269,7 +269,7 @@ _**Results of the dedicated writing workflow: to be written into `../n2khab-bina
 
 
 
-## 2.2 Needed for restricting the spatial target population for each monitoring scheme (target population restricting data)
+## 2.2 restricting the spatial target population for each monitoring scheme (target population restricting data)
 
 Separate data next to the sampling frame are needed to restrict the spatial target population for each monitoring scheme, in order to completely define the respective spatial target populations. These data are comprised of:
 
@@ -294,7 +294,7 @@ _**Results: NOT to be written**_
 </DIV>
 
 
-## 2.3 Needed for defining relevant existing measurement locations with 'usefulness' attributes
+## 2.3 defining relevant existing measurement locations with 'usefulness' attributes
 
 - spatial attributes of existing measurement locations
 - 'usefulness' attributes of the locations that allow to make selections which maximize 1) usefulness of existing data and 2) the potential of follow-up in the near future. These are derived of a dataset of the environmental variable of interest, that has at least a relevant overlap with the target population
@@ -386,7 +386,7 @@ _**Results: NOT to be written**_
 
 # 3. Low-level helper functions
 
-## 3.1 Needed for reading data
+## 3.1 reading data
 
 To recall, `read_xxx()` functions typically return:
 
@@ -458,7 +458,7 @@ _**Results: NOT to be written**_
 </DIV>
 
 
-## 3.2 Needed for data checking
+## 3.2 data checking
 
 Workflows (in no matter which repo) will depend on the user that places data in the right location, and most of all: _the **right** data_ in the right location.
 
@@ -484,7 +484,7 @@ _**Results: NOT to be written**_
 </DIV>
 
 
-## 3.3 Needed for data definition
+## 3.3 data definition
 
 In order to allow for checks (see 3.2) and further metadata, definition of data is needed:
 
