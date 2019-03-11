@@ -25,7 +25,7 @@ The data, or the results of dataset-specific reading functions, are [tidied](htt
 - English names for table headings (dataframe variables).
 
 The data in this repo should be read using relative paths and is organized in local folders.
-To be able to reproduce the workflows (scripts and markdown files) that reside in the other n2khab-repositories, some conventions are needed on the location of the folders and the type of data they contain:
+To be able to reproduce the workflows (scripts and Rmarkdown files) that reside in the other n2khab-repositories, some conventions are needed on the location of the folders and the type of data they contain:
 
 - data sources in **text-format (not too large)** are _versioned_ within this repository, in one or at most two folders:
     - `data/10_raw`: local copies of text-format **inputdata** versions are to be put here.
@@ -35,9 +35,7 @@ To be able to reproduce the workflows (scripts and markdown files) that reside i
 - **binary** data sources are present in `../n2khab-binarydata` (this means that a folder `n2khab-binarydata` exists _next to this repository_).
 These may also include **_large_ text-format** files, such as rasters.
 For the sake and ease of reproducibility, this folder may be uploaded to Zenodo as a whole once in a while (a few, yet unpublished datasets may also be published separately on Zenodo).
-As could be the case for the repo itself. 
-
-<!-- or use the github releases system to create a snaphot of the repo, which is a zip file, which can be uploaded to zenodo? but maybe the latter is then superfluous-->
+As could be the case for the repo itself, or through an automated upload of releases.
 
 Perhaps some binary datasets will receive a versioning system in the future, such as git LFS, if there is reason to suspect that the used versions will not be maintained in the source location in the long term.
 The sources are supposed to be divided as:
@@ -52,7 +50,7 @@ How we distribute the data internally within the organisation is roughly documen
 
 ### Writing functions and workflows
 
-All `read_xxx()` functions in this repo read data from local folders. See the separate [document](functionality.md) on needed functionality.
+See the separate [document](functionality.md) on needed functionality.
 
 
 ### Find your way: repository structure
@@ -87,7 +85,3 @@ At this stage, you need to resolve any merge conflicts that may arise in your ow
     - note that, if you branched off another (reference) branch than `master`, make sure to change the reference branch in the pull request (the default reference is `master`).
 1. After your PR is merged, pull the reference branch (usually `master`) and clean up your local repo in order to keep up with the remote.
 
-
-<!--I think the step on line 84 can be replaced by `git pull origin master` while working in your own branch? -->
-
-    
