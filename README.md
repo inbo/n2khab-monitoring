@@ -39,8 +39,9 @@ As could be the case for the repo itself, or through an automated upload of rele
 
 Perhaps some binary datasets will receive a versioning system in the future, such as git LFS, if there is reason to suspect that the used versions will not be maintained in the source location in the long term.
 The sources are supposed to be divided as:
-    - `../n2khab-binarydata/10_raw`: local copies of binary inputdata versions are to be put here;
-    - `../n2khab-binarydata/20_processed`: generated binary data are put here by scripts;
+
+- `../n2khab-binarydata/10_raw`: local copies of binary inputdata versions are to be put here;
+- `../n2khab-binarydata/20_processed`: generated binary data are put here by scripts;
     
 Each dataset is to be put in its *own subfolder* within one of the above folders.
 The name of the subfolder is a fixed code (ID) according to the aforementioned [list](https://docs.google.com/spreadsheets/d/1E8ERlfYwP3OjluL8d7_4rR1W34ka4LRCE35JTxf3WMI).
