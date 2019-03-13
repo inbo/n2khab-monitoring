@@ -75,7 +75,8 @@ The R object can then be 100% recreated using `git2rdata::read_vc()`!!
 
 ### How can I contribute code?
 
-More detailed info on git workflows at INBO: <https://inbo.github.io/tutorials/tags/git/>
+More detailed info on git workflows at INBO: <https://inbo.github.io/tutorials/tags/git/>.
+See also [these git workshop materials](https://inbo.github.io/git-course/index.html).
 
 1. Make commits (in your local clone of the remote repo on Github) _in your own git branch_, branched off from the `master` branch.
 (But see this in a relative manner: exactly the same process can be repeated by someone else in turn, relative to your branch.)
