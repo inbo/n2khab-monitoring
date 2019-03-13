@@ -254,7 +254,7 @@ Ideally, an intermediate spatial layer is generated that combines the above laye
 
 _**Needed functions: in repo n2khab-inputs:**_
 
-Both functions take into account type code consistency and link subtypes to main types. Both functions generate a data set consisting of both a spatial object and a tidy dataframe, including areal proportions.
+Both functions take into account type code consistency and link subtypes to main types. Both functions generate a data set consisting of both a spatial object and a long / tidy dataframe, including areal proportions.
 
 - `write_terr_habitatmap(threshold_pct, outputdir)`
     - this function reads and integrates `habitatmap`, `habitatdune` and `mhq_terrestrial_locs`
@@ -434,7 +434,7 @@ _**Needed functions: in inborutils package:**_
 
 - For reading input data:
     - `read_habitatmap(datadir)`
-        - returns spatial object and tidy dataframe
+        - returns spatial object and long (tidy) dataframe
     - `read_watersurfaces(datadir)`
     - `read_habitatstreams(datadir)`
     - `read_flanders(datadir)`
