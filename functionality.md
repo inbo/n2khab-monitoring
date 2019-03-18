@@ -472,13 +472,15 @@ The following things are therefore needed  in each repo where data processing is
 
 <DIV STYLE="background:#E8C3D58B;padding:10px">
 
-_**Needed functions: in repo n2khab-inputs plus other repos with data processing:**_
+_**Needed functions: in repo n2khab-inputs**_
 
 - `check_inputdata(checksums, root, checksumdelay=14*24*3600)`
     - checks data presence, data version and integrity, cf. the functionality described [here](https://docs.google.com/spreadsheets/d/18U4AmiMnnApbgQTnfWbeZ3dAH3_4ISxUob_SX-maKV8/edit#gid=0&range=B74)
     - it generates, next to each file, a metadata file and, under certain conditions, a checksum file
     - it checks the current metadata against the metadata file and it checks the checksum against the checksum in the `checksums` dataframe, which is to be generated from `datalist_chosen`, `dataversions` and `datasources`
     - it reports to the user
+
+_**Dedicated workflow (scripts/Rmarkdown): in repo n2khab-inputs plus other repos with data processing**_
 
 _**Results: NOT to be written**_
 
