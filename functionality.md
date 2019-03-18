@@ -438,6 +438,7 @@ _**Needed functions: in inborutils package:**_
     - `read_watersurfaces(datadir)`
     - `read_habitatstreams(datadir)`
     - `read_flanders(datadir)`
+    - `read_provinces(datadir)`
     - `read_SACH(datadir)`
     - `read_biogeoregions(datadir)`
     - `read_ecoregions(datadir)`
