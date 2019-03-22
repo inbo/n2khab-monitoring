@@ -262,7 +262,7 @@ Both functions take into account type code consistency and link subtypes to main
 
 _**Dedicated writing workflow (scripts/Rmarkdown): in repo n2khab-inputs**_
 
-_**Results of the dedicated writing workflow: to be written into `../n2khab-binarydata/20_processed`**_
+_**Results of the dedicated writing workflow: to be written into `data/20_processed`**_
 
 </DIV>
 
