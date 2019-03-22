@@ -1,6 +1,7 @@
 ## Welcome
 
-This repo will hold **data definitions and preprocessing steps** that are necessary for analyses regarding Flemish Natura 2000 habitats and regionally important biotopes (RIBs).
+This repo will hold _the **n2khabutils** R package with data definitions and preprocessing functions_, useful for analyses regarding Flemish Natura 2000 habitats and regionally important biotopes (RIBs).
+Apart from the package, some housekeeping workflows are provided, such as installing the package, updating some of the text data, datachecks for the workflows and the creation of some of the (generated) binary data.
 The repo is set up with a special interest in the design, review and analysis of Natura 2000 habitat monitoring programmes at the Flemish scale (each is a combination of multiple monitoring schemes):
 
 - MNE: monitoring programme for the natural environment
@@ -8,58 +9,56 @@ The repo is set up with a special interest in the design, review and analysis of
 
 _The ultimate aim is to achieve open and reproducible data workflows. That is a prerequisite for qualifiable science, for sharing and for broad cooperation._
 
-_**The repo is under construction.**_
 
 ## Getting started
 
 The repo is meant to fit the draft principles and setup in [this googlesheet](https://docs.google.com/spreadsheets/d/18U4AmiMnnApbgQTnfWbeZ3dAH3_4ISxUob_SX-maKV8), for long-term N2KHAB projects.
 
-### Organizing data
+Summarizing schemes of the setup:
 
-Regarding binary or text-format data: see [this list (under construction)](https://docs.google.com/spreadsheets/d/1E8ERlfYwP3OjluL8d7_4rR1W34ka4LRCE35JTxf3WMI) for metadata on dataset versions and for their source location.
-There are some useful filter-views available in this google sheet.
+- relationships between possible, future [repositories](https://drive.google.com/open?id=1RQsjxch0YKdqJSPIDjCG_wEbYTlP3oDv);
+- data storage and versioning [workflows](https://drive.google.com/open?id=1xZz9f9n8zSUxBJvW6WEFLyDK7Ya0u4iN).
 
-The data, or the results of dataset-specific reading functions, are [tidied](https://r4ds.had.co.nz/tidy-data.html#tidy-data-1) and as much as possible internationalized:
+### Find your way: repository structure
 
-- English names for types, environmental pressures, ...;
-- English names for table headings (dataframe variables).
+This is the structure of the repo:
 
-The data in this repo should be read using relative paths and is organized in local folders.
-To be able to reproduce the workflows (scripts and Rmarkdown files) that reside in the other n2khab-repositories, some conventions are needed on the location of the folders and the type of data they contain:
+```
+├── data                    <- Binary or large data! Copy needed data here. IGNORED by git.
+    ├── 10_raw
+    ├── 20_processed        <- Either copy from a source location, or generate yourself.
+├── src                     <- Put scripts / R markdown files here.
+├── n2khabutils             <- R-package
+    ├── inst
+        ├── textdata        <- Textual data delivered with the package (in vc-format).
+                               They can be read into R by package functions or with
+                               git2rdata::read_vc().
+    ├── man
+    ├── R                   <- Package functions are to be made here.
+    ├── DESCRIPTION
+    ├── n2khabutils.Rproj   <- RStudio project file for convenient package management
+    ├── NAMESPACE
+    ├── LICENSE
+├── datamanagement.md       <- How data are organized and stored
+├── functionality.md        <- Functionality needed in this and associated n2khab-repos
+├── n2khab-inputs.Rproj     <- Main RStudio project file
+├── README.md
+└── LICENSE
+```
 
-- data sources in **text-format (not too large)** are _versioned_ within this repository, in one or at most two folders:
-    - `data/10_raw`: local copies of text-format **inputdata** versions are to be put here.
-    Some of them come over from another repository; others may be written as the result of a synchronization script to give them a start;
-    - (`data/20_processed`: generated text-format data can be put here by code.
-    _Up to now, there are no such data expected, so this instruction only serves as a reference when needed._)
-- **binary** data sources are present in `../n2khab-binarydata` (this means that a folder `n2khab-binarydata` exists _next to this repository_).
-These may also include **_large_ text-format** files, such as rasters.
-For the sake and ease of reproducibility, this folder may be uploaded to Zenodo as a whole once in a while (a few, yet unpublished datasets may also be published separately on Zenodo).
-As could be the case for the repo itself, or through an automated upload of releases.
+### Managing data
 
-Perhaps some binary datasets will receive a versioning system in the future, such as git LFS, if there is reason to suspect that the used versions will not be maintained in the source location in the long term.
-The sources are supposed to be divided as:
+See the separate [document](datamanagement.md) on data management.
 
-- `../n2khab-binarydata/10_raw`: local copies of binary inputdata versions are to be put here;
-- `../n2khab-binarydata/20_processed`: generated binary data are put here by scripts;
-    
-Each dataset is to be put in its *own subfolder* within one of the above folders.
-The name of the subfolder is a fixed code (ID) according to the aforementioned [list](https://docs.google.com/spreadsheets/d/1E8ERlfYwP3OjluL8d7_4rR1W34ka4LRCE35JTxf3WMI).
-As far as possible, the corresponding file(s) get the same name.
-
-How we distribute the data internally within the organisation is roughly documented in the [draft principles and setup googlesheet](https://docs.google.com/spreadsheets/d/18U4AmiMnnApbgQTnfWbeZ3dAH3_4ISxUob_SX-maKV8). The aim is to avoid the need for everyone to download each separate dataset from the authorative source location.
 
 ### Writing functions and workflows
 
 See the separate [document](functionality.md) on needed functionality.
 
 
-### Find your way: repository structure
-
-To be documented; some considerations are pending.
-
-
 ### Coding tools: it's never too late for learning!
+
+When writing functions for `n2khabutils` or writing workflows (in `src`):
 
 - please use `tidyverse`, `sf` and `raster` packages for data reading.
 Discover the human-friendly way of coding a data processing pipeline through the use of [pipes](https://r4ds.had.co.nz/pipes.html)!
