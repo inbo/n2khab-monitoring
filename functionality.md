@@ -116,7 +116,7 @@ The 'base' sampling frame needs input data in order to provide the following att
     - `flanders` (used to restrict the previous layers, as far as needed)
 - the attributes 'type' and the type's spatial proportion (see 2.1)
 - domains:
-    - `SACH` (Special Areas of Conservation: Habitats Directive (Flanders))
+    - `sac` (Special Areas of Conservation: Habitats Directive (Flanders))
     - `biogeoregions`
 - GRTS ranking number: derived from:
     - `GRTSmaster`
@@ -401,6 +401,7 @@ So, depending on the data source, it may require more than a `read_vc()` or `st_
 _**Needed functions: in package n2khabutils:**_
 
 - For reading input data:
+    - `read_envir_pressures(datadir)`
     - `read_schemes(datadir)`
     - `read_types_per_scheme(datadir)`
     - `read_types_checklist(datadir)`
@@ -438,7 +439,7 @@ _**Needed functions: in inborutils package:**_
     - `read_habitatstreams(datadir)`
     - `read_flanders(datadir)`
     - `read_provinces(datadir)`
-    - `read_SACH(datadir)`
+    - `read_sac(datadir)`
     - `read_biogeoregions(datadir)`
     - `read_ecoregions(datadir)`
     - `read_soilmap(datadir)`
