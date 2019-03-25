@@ -2,3 +2,5 @@
 .Rhistory
 *.html
 data/
+hashes.csv
+.~lock*
