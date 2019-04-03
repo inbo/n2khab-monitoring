@@ -49,7 +49,7 @@ _Explanatory notes on function arguments used further:_
 - `outputdir`: the directory where the dataset is to be written (should be a subfolder of `outputdir` named as the dataset's ID)
 - `threshold_pct`: the areal percentage threshold used to withhold types from `habitatmap`
 - `resolution`: the resolution that the user wants for the evaluation grid
-- `evaluation_grid`: coarse grid based on `GRTSmaster`
+- `evaluation_grid`: coarse grid based on `GRTSmaster_habitats`
 - `cell_samplesizes`: dataframe with sample size per evaluation cell
 - `connection`: database connection
 
@@ -110,7 +110,7 @@ The spatial unit can correspond to a grid cell from a GRTS master grid (terrestr
 The 'base' sampling frame needs input data in order to provide the following attributes when drawing samples:
 
 - spatial unit definition (ID, spatial attributes): derived from:
-    - `GRTSmaster`
+    - `GRTSmaster_habitats`
     - `watersurfaces`
     - `habitatstreams`
     - `flanders` (used to restrict the previous layers, as far as needed)
@@ -119,8 +119,8 @@ The 'base' sampling frame needs input data in order to provide the following att
     - `sac` (Special Areas of Conservation: Habitats Directive (Flanders))
     - `biogeoregions`
 - GRTS ranking number: derived from:
-    - `GRTSmaster`
-    - algorithms to join the `GRTSmaster` ranking number to spatial units (of terrestrial, lotic, lentic types respectively)
+    - `GRTSmaster_habitats`
+    - algorithms to join the `GRTSmaster_habitats` ranking number to spatial units (of terrestrial, lotic, lentic types respectively)
     
 In practice, it is possible to build up the base sampling frame in steps, i.e. according to the needs.
 E.g., the addition of `watersurfaces` and `habitatstreams` can also be postponed.
@@ -149,7 +149,7 @@ _**Results: to be written into repo n2khab-samplingframes**_
 - aimed sample size for each evaluation cell
 - sampling design attributes, especially spatial sample sizes
 
-Plus the supporting functions (see [further](#intermediate)) to scale up `GRTSmaster` to make the evaluation grid and calculate the expected sample size for each evaluation cell.
+Plus the supporting functions (see [further](#intermediate)) to scale up `GRTSmaster_habitats` to make the evaluation grid and calculate the expected sample size for each evaluation cell.
 
 <DIV STYLE="background:#E8C3D58B;padding:10px">
 
@@ -189,7 +189,7 @@ _**Results: to be written into repo n2khab-mne-design**_
 I.e. including model-assisted inference.
 
 - sampling-unit-level design attributes, including type, sampling weights, time (at least at the level of the revisit design's specifications), domain and poststratum specification
-- `mne_typegroups`
+- `types_per_scheme`, defining typegroups if applicable
 - auxiliary variable(s) (see [draft list](https://docs.google.com/spreadsheets/d/14jiHfF4vZUlmfPKiry8HCDDt-HFFvhDhW9_SFvtdSkk) -- in Dutch), known for the whole of the sampling frame, either:
     - categorical variable defining poststrata (for poststratification)
     - continuous variable (for regression estimation)
@@ -225,7 +225,7 @@ _**Results: to be written into repo n2khab-mne-design (simulations) or n2khab-mn
 
 ## 2.1 Data & functions to obtain the attributes 'type' and the type's spatial proportion
 
-Possible dataframes or spatial objects to join this information to, include `GRTSmaster`, `groundwater_sites`, `lenticwater_sites`, ... Often, more than one type can be linked to a spatial unit and therefore the information is typically not directly part of a spatial object (they use a common identifier). Instead, a long (tidy) dataframe is generated to enlist all types that are recorded at a location.
+Possible dataframes or spatial objects to join this information to, include `GRTSmaster_habitats`, `groundwater_sites`, `lenticwater_sites`, ... Often, more than one type can be linked to a spatial unit and therefore the information is typically not directly part of a spatial object (they use a common identifier). Instead, a long (tidy) dataframe is generated to enlist all types that are recorded at a location.
 
 Depending on the purpose, the type-attribute is to be derived from one of more of the following:
 
@@ -239,7 +239,7 @@ Depending on the purpose, the type-attribute is to be derived from one of more o
 
 Moreover, it is brought in consistency, and restricted to the type codes from the following lists:
 
-- `types_checklist`
+- `types`
 - `types_per_scheme`
 
 Also, main types need to be linked to their corresponding _subtypes_ in order to be picked up when selections are defined at the subtype level (needed when no subtype information exists for a given spatial object).
@@ -354,12 +354,12 @@ _**Results of the dedicated writing workflow: to be written into repo n2khab-mne
 
 _**Needed functions: in package n2khabutils:**_
 
-- `spatialjoin_GRTSmaster(object)`
-    - takes a spatial R object (polygons, line segments, points), makes a spatial join with `GRTSmaster` and returns a spatial R object with GRTS attributes added;
+- `spatialjoin_GRTS(object)`
+    - takes a spatial R object (polygons, line segments, points), makes a spatial join with `GRTSmaster_habitats` and returns a spatial R object with GRTS attributes added;
     - potentially involves an open GIS-backend;
     - for polygons and line segments, implements a point selection procedure to comply with MHQ selections.
 - `evaluation_grid(resolution)`
-    - i.e. a scaled up version (using `resolution`) of `GRTSmaster`
+    - i.e. a scaled up version (using `resolution`) of `GRTSmaster_habitats`
 - `soiltexture_coarse()`
     - takes a vector with soil type codes (character of factor) and converts this into a factor with three coarse texture classes (fine / coarse / peat)
 
@@ -404,8 +404,8 @@ _**Needed functions: in package n2khabutils:**_
     - `read_envir_pressures(datadir)`
     - `read_schemes(datadir)`
     - `read_types_per_scheme(datadir)`
-    - `read_types_checklist(datadir)`
-    - `read_GRTSmaster(datadir)`
+    - `read_types(datadir)`
+    - `read_GRTSmaster_habitats(datadir)`
         - if this is not feasible within R, an open GIS-backend needs to be called by R
     - `read_habitatdune(datadir)`
     - `read_mhq_terrestrial_locs(datadir)`
