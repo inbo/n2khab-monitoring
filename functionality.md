@@ -401,7 +401,7 @@ So, depending on the data source, it may require more than a `read_vc()` or `st_
 _**Needed functions: in package n2khabutils:**_
 
 - For reading input data:
-    - `read_envir_pressures(datadir)`
+    - `read_env_pressures(datadir)`
     - `read_schemes(datadir)`
     - `read_types_per_scheme(datadir)`
     - `read_types(datadir)`
