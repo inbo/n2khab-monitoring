@@ -4,3 +4,5 @@
 data/
 hashes.csv
 .~lock*
+*.Rcheck/
+*.tar.gz
