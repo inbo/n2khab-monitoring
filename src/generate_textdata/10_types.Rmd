@@ -1,0 +1,102 @@
+# Retrieving list types from a googlesheet and splitting it in two n2khabutils data sources
+
+## Initialize `namelist` with typeclasses
+
+Set path and filename of the namelist:
+
+```{r}
+namelist_path <- "../../n2khabutils/inst/textdata/namelist"
+```
+
+
+Reading from the source googlesheet:
+
+```{r message=FALSE}
+types_source <- gs_key("1dK0S1Tt3RlVEh4WrNF5N_-hn0OXiTUVOvsL2JRhSl78")
+# gs_browse(types_gs)
+source_df <-
+    types_source %>%
+    gs_read(ws = 1, 
+            check.names = T,
+            verbose = FALSE)
+```
+
+Writing the namelist a first time:
+
+```{r message=FALSE}
+dummy <- 
+    str_c(namelist_path, ".*") %>% 
+    Sys.glob %>% 
+    file.remove
+source_df %>% 
+    distinct(Groepering.niveau.1,
+           Groepering.niveau.1.Eng) %>% 
+    rename(nl = Groepering.niveau.1,
+           en = Groepering.niveau.1.Eng) %>% 
+    inner_join(tribble(
+        ~code, ~en,
+        "CH", "Coastal and halophytic habitats",
+        "CD", "Coastal sand dunes", 
+        "ID", "Inland dunes", 
+        "FW", "Fresh and brackish water", 
+        "HS", "Temperate heath and scrub", 
+        "SS", "Sclerophyllous scrub", 
+        "GR", "Natural and semi-natural grassland",
+        "BMF", "Bogs, mires and fens", 
+        "RC", "Rocky habitats and caves", 
+        "FS", "Forest and scrub"
+    )) %>% 
+    gather(key = "lang", value = "name", en:nl) %>% 
+    mutate(shortname = NA %>% as.character) %>% 
+    write_vc(namelist_path,
+             sorting = c("lang", "code"))
+```
+
+## Append typenames to `namelist`
+
+```{r}
+source_df %>% 
+    select(code = Code.geïntegreerd,
+           nl_name = Volledige.naam,
+           en_name = Volledige.naam.Eng,
+           nl_shortname = Verkorte.naam,
+           en_shortname = Verkorte.naam.Eng) %>% 
+    gather(key = "key", 
+           value = "value",
+           contains("name")) %>% 
+    separate(key, c("lang", "key")) %>% 
+    spread(key = key,
+           value = value) %>% 
+    bind_rows(read_vc(namelist_path),
+              .) %>% 
+    write_vc(namelist_path)
+```
+
+## Append extra tags to `namelist`
+
+```{r message=FALSE}
+source_df %>% 
+    distinct(nl = Groepering.niveau.2,
+           en = Groepering.niveau.2.Eng) %>% 
+    filter(!is.na(nl) |
+               !is.na(en)
+           ) %>% 
+    inner_join(tribble(
+        ~code, ~en,
+        "DO", "Dike outward",
+        "DIO", "Dike in-/outward", 
+        "DI", "Dike inward", 
+        "SW", "Standing water", 
+        "RW", "Running water", 
+        "CT", "Calcareous type"
+    )) %>% 
+    gather(key = "lang", value = "name", en:nl) %>% 
+    mutate(shortname = NA %>% as.character) %>% 
+    bind_rows(read_vc(namelist_path),
+              .) %>% 
+    write_vc(namelist_path)
+```
+
+
+
+

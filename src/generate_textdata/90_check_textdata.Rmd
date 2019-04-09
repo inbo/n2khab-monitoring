@@ -1,0 +1,13 @@
+# Check textdata
+
+## namelist
+
+Are all codes unique per language?
+
+```{r}
+read_vc(namelist_path) %>% 
+    count(code, lang) %>% 
+    filter(n > 1) %>% 
+    nrow == 0
+```
+
