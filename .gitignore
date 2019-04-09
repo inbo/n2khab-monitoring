@@ -1,6 +1,7 @@
 .Rproj.user
 .Rhistory
 *.html
+!header.html
 data/
 hashes.csv
 .~lock*
