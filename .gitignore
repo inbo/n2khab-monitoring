@@ -2,8 +2,12 @@
 .Rhistory
 *.html
 !header.html
+*.tex
+!header.tex
 data/
 hashes.csv
 .~lock*
 *.Rcheck/
 *.tar.gz
+.httr-oauth
+src/**/*.md
