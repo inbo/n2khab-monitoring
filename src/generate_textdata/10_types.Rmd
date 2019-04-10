@@ -97,6 +97,50 @@ source_df %>%
     write_vc(namelist_path)
 ```
 
+## Make `types`
+
+Set path and filename of `types`:
+
+```{r}
+types_path <- "../../n2khabutils/inst/textdata/types"
+```
+
+Write the data source `types`:
+
+```{r}
+en_codelist <- 
+    read_vc(namelist_path) %>% 
+    filter(lang == "en") %>% 
+    select(code, name)
+source_df %>% 
+    select(type = Code.geïntegreerd,
+           main_type = Code,
+           typeclass_en = Groepering.niveau.1.Eng,
+           tag_1_en = Groepering.niveau.2.Eng) %>% 
+    mutate(typelevel = ifelse(main_type == type, 
+                              "main_type",
+                              "subtype") %>% 
+               factor) %>% 
+    inner_join(en_codelist,
+               by = c("typeclass_en" = "name")) %>% 
+    rename(typeclass = code) %>% 
+    left_join(en_codelist,
+              by = c("tag_1_en" = "name")) %>% 
+    select(type,
+           typelevel,
+           main_type,
+           typeclass,
+           tag_1 = code) %>% 
+    mutate(typeclass = factor(typeclass, 
+                              levels = (.$typeclass %>% unique)),
+           tag_2 = NA %>% as.character,
+           tag_3 = NA %>% as.character
+           ) %>% 
+    write_vc(types_path,
+             sorting = "type",
+             optimize = FALSE,
+             strict = FALSE)
+```
 
 
 

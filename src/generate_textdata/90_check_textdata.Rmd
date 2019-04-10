@@ -11,3 +11,28 @@ read_vc(namelist_path) %>%
     nrow == 0
 ```
 
+## types
+
+Are all codes unique?
+
+```{r}
+read_vc(types_path) %>% 
+    count(type) %>% 
+    filter(n > 1) %>% 
+    nrow == 0
+```
+
+Are all main types correct?
+
+```{r}
+read_vc(types_path) %>% 
+    mutate(main_type_2 = ifelse(str_detect(type, "_"),
+                                str_sub(type, 
+                                        end = str_locate(type, "_") - 1),
+                                type)
+    ) %>% 
+    filter(main_type != main_type_2) %>% 
+    nrow == 0
+```
+
+
