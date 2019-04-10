@@ -406,6 +406,8 @@ _**Needed functions: in package n2khabutils:**_
     - `read_schemes(path, file)`
     - `read_types_per_scheme(path, file)`
     - `read_types(path, file)`
+    - `read_namelist(path, file)`
+        - this holds the names, corresponding to codes in other textual data sources (`types`, `env_pressures` etc.), supporting multiple languages.
     - `read_GRTSmaster_habitats(path, file)`
         - if this is not feasible within R, an open GIS-backend needs to be called by R
     - `read_habitatdune(path, file)`
