@@ -5,7 +5,8 @@ There are some useful filter-views available in this google sheet.
 
 The data, or the results of dataset-specific reading functions (see [functionality](functionality.md)), are [tidied](https://r4ds.had.co.nz/tidy-data.html#tidy-data-1) and as much as possible internationalized:
 
-- English names for types, environmental pressures, ...;
+- availability of English names for types, environmental pressures, ...
+Other languages can be accomodated as well;
 - English names for table headings (dataframe variables).
 
 The data in this repo are organized in local folders.
