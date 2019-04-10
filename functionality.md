@@ -45,7 +45,8 @@ _Explanatory notes on function arguments used further:_
 - `programme`: refers to MNE or MHQ
 - `scheme`: the specific monitoring scheme within MNE or MHQ
 - `object`: a data object in R
-- `datadir`: the directory where the dataset can be found
+- `path`: the directory where the dataset can be found
+- `file`: the filename, without extension in the case of multiple files with different extensions
 - `outputdir`: the directory where the dataset is to be written (should be a subfolder of `outputdir` named as the dataset's ID)
 - `threshold_pct`: the areal percentage threshold used to withhold types from `habitatmap`
 - `resolution`: the resolution that the user wants for the evaluation grid
@@ -283,10 +284,10 @@ Separate data next to the sampling frame are needed to restrict the spatial targ
 
 _**Needed functions: in package n2khabutils:**_
 
-- `read_schemes(datadir)`
-- `read_types_per_scheme(datadir)`
-- `read_shallowgroundwater(datadir)`
-- `read_floodsensitive(datadir)`
+- `read_schemes(path, file)`
+- `read_types_per_scheme(path, file)`
+- `read_shallowgroundwater(path, file)`
+- `read_floodsensitive(path, file)`
 
 _**Results: NOT to be written**_
 
@@ -401,25 +402,25 @@ So, depending on the data source, it may require more than a `read_vc()` or `st_
 _**Needed functions: in package n2khabutils:**_
 
 - For reading input data:
-    - `read_env_pressures(datadir)`
-    - `read_schemes(datadir)`
-    - `read_types_per_scheme(datadir)`
-    - `read_types(datadir)`
-    - `read_GRTSmaster_habitats(datadir)`
+    - `read_env_pressures(path, file)`
+    - `read_schemes(path, file)`
+    - `read_types_per_scheme(path, file)`
+    - `read_types(path, file)`
+    - `read_GRTSmaster_habitats(path, file)`
         - if this is not feasible within R, an open GIS-backend needs to be called by R
-    - `read_habitatdune(datadir)`
-    - `read_mhq_terrestrial_locs(datadir)`
-    - `read_mhq_lentic_locs(datadir)`
-    - `read_mhq_lotic_locs(datadir)`
+    - `read_habitatdune(path, file)`
+    - `read_mhq_terrestrial_locs(path, file)`
+    - `read_mhq_lentic_locs(path, file)`
+    - `read_mhq_lotic_locs(path, file)`
         
 - In some cases, for reading generated data:
-    - `read_terr_habitatmap(datadir)`
+    - `read_terr_habitatmap(path, file)`
         - loads the R objects, returned by `write_terr_habitatmap()`
-    - `read_integrated_habitatmap(datadir)`
+    - `read_integrated_habitatmap(path, file)`
         - loads the R objects, returned by `write_integrated_habitatmap()`
-    - `read_samplingframe(datadir)`
+    - `read_samplingframe(path, file)`
         - loads the R object, returned by `write_samplingframe()`
-    - `read_base_samplingframe(datadir)`
+    - `read_base_samplingframe(path, file)`
         - loads the R object, returned by `write_base_samplingframe()`
 
 _**Results: NOT to be written**_
@@ -433,16 +434,16 @@ _**Results: NOT to be written**_
 _**Needed functions: in inborutils package:**_
 
 - For reading input data:
-    - `read_habitatmap(datadir)`
+    - `read_habitatmap(path, file)`
         - returns spatial object and long (tidy) dataframe
-    - `read_watersurfaces(datadir)`
-    - `read_habitatstreams(datadir)`
-    - `read_flanders(datadir)`
-    - `read_provinces(datadir)`
-    - `read_sac(datadir)`
-    - `read_biogeoregions(datadir)`
-    - `read_ecoregions(datadir)`
-    - `read_soilmap(datadir)`
+    - `read_watersurfaces(path, file)`
+    - `read_habitatstreams(path, file)`
+    - `read_flanders(path, file)`
+    - `read_provinces(path, file)`
+    - `read_sac(path, file)`
+    - `read_biogeoregions(path, file)`
+    - `read_ecoregions(path, file)`
+    - `read_soilmap(path, file)`
     - `read_groundwater_xg3(connection, selection)`
         - defines the query to be executed in the groundwater database, in order to extract metadata _and_ XG3 data
         - it implements criteria, which can be given by a dataframe argument `selection`:
