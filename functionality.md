@@ -226,7 +226,7 @@ _**Results: to be written into repo n2khab-mne-design (simulations) or n2khab-mn
 
 ## 2.1 Data & functions to obtain the attributes 'type' and the type's spatial proportion
 
-Possible dataframes or spatial objects to join this information to, include `GRTSmaster_habitats`, `groundwater_sites`, `lenticwater_sites`, ... Often, more than one type can be linked to a spatial unit and therefore the information is typically not directly part of a spatial object (they use a common identifier). Instead, a long (tidy) dataframe is generated to enlist all types that are recorded at a location.
+Possible dataframes or spatial objects to join this information to, include `GRTSmaster_habitats`, `groundwater_sites`, `lenticwater_sites`, ... Often, more than one type can be linked to a spatial unit and therefore the information is typically not directly part of a spatial object (they use a common identifier). Instead, a long (tidy) dataframe (tibble) is generated to enlist all types that are recorded at a location.
 
 Depending on the purpose, the type-attribute is to be derived from one of more of the following:
 
@@ -254,7 +254,7 @@ Ideally, an intermediate spatial layer is generated that combines the above laye
 
 _**Needed functions: in package n2khabutils:**_
 
-Both functions take into account type code consistency and link subtypes to main types. Both functions generate a data set consisting of both a spatial object and a long / tidy dataframe, including areal proportions.
+Both functions take into account type code consistency and link subtypes to main types. Both functions generate a data set consisting of both a spatial object and a long / tidy dataframe (tibble), including areal proportions.
 
 - `write_terr_habitatmap(threshold_pct, outputdir)`
     - this function reads and integrates `habitatmap`, `habitatdune` and `mhq_terrestrial_locs`
@@ -322,7 +322,7 @@ _**Needed functions: in repo inborutils:**_
     - the function returns a spatial object (hereafter named `groundwater_sites`) with the quality criteria, and with the piezometer IDs and coordinates
 - `spatialjoin_groundwater_sites(object, topological_criterion, groundwater_sites)`
     - takes a spatial R object (e.g. `soilmap`, `terr_habitatmap`, `integrated_habitatmap`) and uses a `topological_criterion` (e.g. intersect with buffer around piezometers with radius x) to make a spatial join with a spatial object `groundwater_sites` as returned by `qualify_groundwater_sites()`
-    - returns a tidy dataframe (hereafter named `groundwater_joinedattributes`) with piezometer IDs and the joined attributes (as buffers may be used, a long format is necessary)
+    - returns a tidy dataframe (tibble) (hereafter named `groundwater_joinedattributes`) with piezometer IDs and the joined attributes (as buffers may be used, a long format is necessary)
 
 _**Results: NOT to be written**_
 
@@ -335,10 +335,10 @@ _**Results: NOT to be written**_
 _**Needed functions: in package n2khabutils:**_
 
 - `filter_groundwater_sites(groundwater_sites, groundwater_joinedattributes, scheme, usefulness)`
-    - combines the spatial object returned by `qualify_groundwater_sites()` with a dataframe, returned by `spatialjoin_groundwater_sites()` and which provides type & type attributes, and restricts the result:
+    - combines the spatial object returned by `qualify_groundwater_sites()` with a dataframe (tibble), returned by `spatialjoin_groundwater_sites()` and which provides type & type attributes, and restricts the result:
         - according to the types and optional spatial restrictions as imposed by the specified MNE-`scheme`;
         - according to `usefulness` criteria, which could be given as a dataframe with the allowed minimum and maximum values of quality characteristics
-    - returns the shrinked forms of `groundwater_sites` _and_ `groundwater_joinedattributes`, as a GeoJSON file or shapefile (points) and a dataframe, respectively.
+    - returns the shrinked forms of `groundwater_sites` _and_ `groundwater_joinedattributes`, as a GeoJSON file or shapefile (points) and a dataframe (tibble), respectively.
     - _alternatively, define a function that encapsulates `qualify_groundwater_sites()` and `spatialjoin_groundwater_sites()` and applies the restriction._
 
 _**Dedicated writing workflow (scripts/Rmarkdown): in repo n2khab-mne-design**_
@@ -393,6 +393,7 @@ To recall, `read_xxx()` functions typically return:
 - tidy formatted data (which may mean that a spatial dataset is to be kept separate from long-formatted attributes).
     - While several `read_xxx()` functions refer to data that are more specific to n2khab-monitoring, other `read_xxx()` functions have broader interest. Therefore, place the latter (only) in the [inborutils](https://github.com/inbo/inborutils) package.
 - data with English variable names and labels of identifiers (such as types, pressures, ...)
+- [tibbles](https://r4ds.had.co.nz/tibbles.html) instead of dataframes
 - omit unneeded variables for n2khab projects
 
 So, depending on the data source, it may require more than a `read_vc()` or `st_read()` statement.
@@ -437,7 +438,7 @@ _**Needed functions: in inborutils package:**_
 
 - For reading input data:
     - `read_habitatmap(path, file)`
-        - returns spatial object and long (tidy) dataframe
+        - returns spatial object and long (tidy) tibble
     - `read_watersurfaces(path, file)`
     - `read_habitatstreams(path, file)`
     - `read_flanders(path, file)`

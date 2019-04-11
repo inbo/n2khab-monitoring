@@ -72,6 +72,8 @@ There you see how to style object, variable and function names, as well as the d
 Define the sorting order well (avoid ties) by using the `sorting` argument, in order to get meaningful _diffs_ when data are updated later.
 The function stores the object in a version-control + R friendly format (tab separated values (.tsv) plus metadata on sorting order and variables (.yml)).
 The R object can then be 100% recreated using `git2rdata::read_vc()`!!
+- if your function returns a dataframe, use `dplyr::as_tibble()` to return it as a tibble instead.
+A tibble is a dataframe that makes working in the tidyverse a little [easier](https://r4ds.had.co.nz/tibbles.html).
 
 
 ### How can I contribute code?
