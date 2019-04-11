@@ -1,11 +1,39 @@
 ## Welcome
 
-This repo will hold _the **n2khabutils** R package with data definitions and preprocessing functions_, useful for analyses regarding Flemish Natura 2000 habitats and regionally important biotopes (RIBs).
-Apart from the package, some housekeeping workflows are provided, such as installing the package, updating some of the text data, datachecks for the workflows and the creation of some of the (generated) binary data.
+### ... to this package
+
+This repo holds _the **n2khabutils** R package with data definitions and preprocessing functions_, supporting _reproducible_ and _transparent_ analyses on Flemish Natura 2000 habitats and regionally important biotopes (RIBs).
+Hence the package provides broad _utilities_ (**utils**) for Natura 2000 (**n2k**) habitats (**hab**) analyses in Flanders.
+It consequently supports other _N2KHAB_ projects, i.e. projects that focus on Natura 2000 habitat (and which may as well use the _n2khab_-prefix for their git repository name).
+
+You are welcome to **contribute** to reference data and to package functionality!
+It is wise to first think about the scope of your function (or your proposed enhancement of an exisiting one), and talk it through with other collaborators:
+
+- functions that are of broader interest than Natura 2000, better go to the [inborutils](https://inbo.github.io/inborutils/) package;
+- functions that will only be relevant to a specific _N2KHAB_ project, are better developed in the project-specific repo.
+
+As the package is under development, several functions are yet to be developed, and several of these are targeted to other packages or repositories.
+You will find inspiration for positioning your own function:
+
+- in the [document](functionality.md) on intended functionality;
+- in the [draft overview of functions per repository](https://docs.google.com/spreadsheets/d/18U4AmiMnnApbgQTnfWbeZ3dAH3_4ISxUob_SX-maKV8/edit#gid=924567109).
+
+### ... to this repo as a whole
+
+Apart from the package, this _n2khab-inputs_ repo provides some housekeeping and data-generating workflows as _scripts_ or _R markdown_, such as:
+
+- installing the package;
+- managing package development;
+- generating and updating text data;
+- datachecks for the workflows;
+- the creation of some of the (generated) binary data.
+
 The repo is set up with a special interest in the design, review and analysis of Natura 2000 habitat monitoring programmes at the Flemish scale (each is a combination of multiple monitoring schemes):
 
 - MNE: monitoring programme for the natural environment
 - MHQ: monitoring programme for biotic habitat quality
+
+But as stressed already, the repo's scope is not limited to these!
 
 _The ultimate aim is to achieve open and reproducible data workflows. That is a prerequisite for qualifiable science, for sharing and for broad cooperation._
 
@@ -13,8 +41,9 @@ _The ultimate aim is to achieve open and reproducible data workflows. That is a 
 ## Getting started
 
 The repo is meant to fit the draft principles and setup in [this googlesheet](https://docs.google.com/spreadsheets/d/18U4AmiMnnApbgQTnfWbeZ3dAH3_4ISxUob_SX-maKV8), for long-term N2KHAB projects.
+The googlesheet is partly in Dutch.
 
-Summarizing schemes of the setup:
+Some summarizing schemes (in English):
 
 - relationships between possible, future [repositories](https://drive.google.com/open?id=1RQsjxch0YKdqJSPIDjCG_wEbYTlP3oDv);
 - data storage and versioning [workflows](https://drive.google.com/open?id=1xZz9f9n8zSUxBJvW6WEFLyDK7Ya0u4iN).
@@ -46,6 +75,12 @@ This is the structure of the repo:
 └── LICENSE
 ```
 
+### Installing, testing and using the _n2khabutils_ package
+
+
+< to do ! >
+
+
 ### Managing data
 
 See the separate [document](datamanagement.md) on data management.
@@ -53,7 +88,7 @@ See the separate [document](datamanagement.md) on data management.
 
 ### Writing functions and workflows
 
-See the separate [document](functionality.md) on needed functionality.
+See the separate [document](functionality.md) on intended functionality.
 
 
 ### Coding tools: it's never too late for learning!
@@ -66,7 +101,7 @@ Organise data in R in a [tidy](https://r4ds.had.co.nz/tidy-data.html#tidy-data-1
 Recommended resources to get started are:
     - [R for Data Science](https://r4ds.had.co.nz/)
     - [Geocomputation with R](https://geocompr.robinlovelace.net)
-- have quick look at the [tidyverse style guide](https://style.tidyverse.org/).
+- have a quick look at the [tidyverse style guide](https://style.tidyverse.org/).
 There you see how to style object, variable and function names, as well as the documentation.
 - preferrably use `git2rdata::write_vc()` when an R _dataframe_ needs to be written to disk for later use (see <https://inbo.github.io/git2rdata/>).
 Define the sorting order well (avoid ties) by using the `sorting` argument, in order to get meaningful _diffs_ when data are updated later.
