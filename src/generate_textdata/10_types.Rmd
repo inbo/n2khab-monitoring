@@ -1,4 +1,4 @@
-# Retrieving list types from a googlesheet and splitting it in two n2khabutils data sources
+# Retrieving the list of types from a googlesheet and splitting it in two n2khabutils data sources
 
 ## Initialize `namelist` with typeclasses
 
