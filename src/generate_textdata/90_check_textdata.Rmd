@@ -35,4 +35,40 @@ read_vc(types_path) %>%
     nrow == 0
 ```
 
+## env_pressures
+
+Are all codes unique?
+
+```{r}
+read_vc(ep_path) %>% 
+    count(ep_code) %>% 
+    filter(n > 1) %>% 
+    nrow == 0
+```
+
+Do ep_classes coincide between ep_code and ep_class?
+
+```{r}
+read_vc(ep_path) %>% 
+    mutate(ep_class_c = str_c("ep_class_",
+                        str_match(ep_code, "ep_(..).*")[,2]
+                        ),
+           ep_class = as.character(ep_class)
+    ) %>% 
+    (function(df) {
+        all.equal(df$ep_class_c, df$ep_class)
+    })
+```
+
+Do ep_classes coincide between ep_code and explanation?
+
+```{r}
+read_vc(ep_path) %>% 
+    mutate(ep_class_c1 = str_match(ep_code, "ep_(..).*")[,2],
+           ep_class_c2 = str_match(explanation, "ep_(..).*")[,2],
+    ) %>% 
+    (function(df) {
+        all.equal(df$ep_class_c1, df$ep_class_c2)
+    })
+```
 
