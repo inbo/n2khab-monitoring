@@ -137,7 +137,8 @@ source_df %>%
            tag_3 = NA %>% as.character
            ) %>% 
     write_vc(types_path,
-             sorting = "type",
+             sorting = c("typeclass",
+                         "type"),
              optimize = FALSE,
              strict = FALSE)
 ```
