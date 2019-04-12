@@ -190,7 +190,7 @@ _**Results: to be written into repo n2khab-mne-design**_
 I.e. including model-assisted inference.
 
 - sampling-unit-level design attributes, including type, sampling weights, time (at least at the level of the revisit design's specifications), domain and poststratum specification
-- `types_per_scheme`, defining typegroups if applicable
+- `scheme_types`, defining typegroups if applicable
 - auxiliary variable(s) (see [draft list](https://docs.google.com/spreadsheets/d/14jiHfF4vZUlmfPKiry8HCDDt-HFFvhDhW9_SFvtdSkk) -- in Dutch), known for the whole of the sampling frame, either:
     - categorical variable defining poststrata (for poststratification)
     - continuous variable (for regression estimation)
@@ -241,7 +241,7 @@ Depending on the purpose, the type-attribute is to be derived from one of more o
 Moreover, it is brought in consistency, and restricted to the type codes from the following lists:
 
 - `types`
-- `types_per_scheme`
+- `scheme_types`
 
 Also, main types need to be linked to their corresponding _subtypes_ in order to be picked up when selections are defined at the subtype level (needed when no subtype information exists for a given spatial object).
 
@@ -274,7 +274,7 @@ _**Results of the dedicated writing workflow: to be written into `data/20_proces
 Separate data next to the sampling frame are needed to restrict the spatial target population for each monitoring scheme, in order to completely define the respective spatial target populations. These data are comprised of:
 
 - `schemes`: provides an ID for each monitoring scheme, its defining attributes (e.g. in MNE: compartment, environmental pressure, (sometimes:) variable) and mentions whether a further spatial restriction layer is needed
-- `types_per_scheme`: dataframe that lists the types of the target population of respective monitoring schemes
+- `scheme_types`: dataframe that lists the types of the target population of respective monitoring schemes
 - spatial restriction to units irrespective of type -- depending on the monitoring scheme (see [list](https://docs.google.com/spreadsheets/d/14jiHfF4vZUlmfPKiry8HCDDt-HFFvhDhW9_SFvtdSkk/edit#gid=907349910)): derived from:
     - `shallowgroundwater`
     - `floodsensitive`
@@ -285,7 +285,7 @@ Separate data next to the sampling frame are needed to restrict the spatial targ
 _**Needed functions: in package n2khabutils:**_
 
 - `read_schemes(path, file)`
-- `read_types_per_scheme(path, file)`
+- `read_scheme_types(path, file)`
 - `read_shallowgroundwater(path, file)`
 - `read_floodsensitive(path, file)`
 
@@ -405,7 +405,7 @@ _**Needed functions: in package n2khabutils:**_
 - For reading input data:
     - `read_env_pressures(path, file)`
     - `read_schemes(path, file)`
-    - `read_types_per_scheme(path, file)`
+    - `read_scheme_types(path, file)`
     - `read_types(path, file)`
     - `read_namelist(path, file)`
         - this holds the names, corresponding to codes in other textual data sources (`types`, `env_pressures` etc.), supporting multiple languages.
