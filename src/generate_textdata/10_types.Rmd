@@ -1,4 +1,4 @@
-# Retrieving the list of types from a googlesheet and splitting it in two n2khabutils data sources
+# Retrieving the list of current type codes from the reference googlesheet and splitting it in two n2khabutils data sources
 
 ## Initialize `namelist` with typeclasses
 
@@ -9,7 +9,7 @@ namelist_path <- "../../n2khabutils/inst/textdata/namelist"
 ```
 
 
-Reading from the source googlesheet:
+Reading from the source googlesheet (maintained by the MNE and [HabNorm](https://github.com/inbo/habnorm) projects):
 
 ```{r message=FALSE}
 types_source <- gs_key("1dK0S1Tt3RlVEh4WrNF5N_-hn0OXiTUVOvsL2JRhSl78")

@@ -1,4 +1,4 @@
-# Retrieving the list of environmental pressures from a googlesheet and moving data to two n2khabutils data sources
+# Retrieving the current list of environmental pressures from the reference googlesheet and moving data to two n2khabutils data sources
 
 ## Append extra names to `namelist`
 
@@ -6,7 +6,6 @@ Reading from the source googlesheet:
 
 ```{r message=FALSE}
 ep_source <- gs_key("1PH6InqJk0ijQF_N7v7IZjarijlqHRBCKhTbDn44skZU")
-# gs_browse(types_gs)
 source_df <-
     ep_source %>%
     gs_read(ws = gs_ws_ls(ep_source) %>%

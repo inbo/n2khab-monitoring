@@ -49,4 +49,9 @@ opts_chunk$set(
 )
 ```
 
+**Note: this is a bookdown project, supposed to be run from within the `src/generate_textdata` subfolder. You can use the `generate_textdata.Rproj` RStudio project file in this subfolder to run it.**
+
+
+
+
 

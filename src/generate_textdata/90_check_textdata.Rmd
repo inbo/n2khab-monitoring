@@ -2,10 +2,15 @@
 
 ## namelist
 
+```{r}
+namelist_check <- 
+    read_vc(namelist_path)
+```
+
 Are all codes unique per language?
 
 ```{r}
-read_vc(namelist_path) %>% 
+namelist_check %>% 
     count(code, lang) %>% 
     filter(n > 1) %>% 
     nrow == 0
@@ -13,10 +18,14 @@ read_vc(namelist_path) %>%
 
 ## types
 
+```{r}
+types_check <- read_vc(types_path)
+```
+
 Are all codes unique?
 
 ```{r}
-read_vc(types_path) %>% 
+types_check %>% 
     count(type) %>% 
     filter(n > 1) %>% 
     nrow == 0
@@ -25,7 +34,7 @@ read_vc(types_path) %>%
 Are all main types correct?
 
 ```{r}
-read_vc(types_path) %>% 
+types_check %>% 
     mutate(main_type_2 = ifelse(str_detect(type, "_"),
                                 str_sub(type, 
                                         end = str_locate(type, "_") - 1),
@@ -37,10 +46,15 @@ read_vc(types_path) %>%
 
 ## env_pressures
 
+```{r}
+ep_check <- read_vc(ep_path)
+```
+
+
 Are all codes unique?
 
 ```{r}
-read_vc(ep_path) %>% 
+ep_check %>% 
     count(ep_code) %>% 
     filter(n > 1) %>% 
     nrow == 0
@@ -49,7 +63,7 @@ read_vc(ep_path) %>%
 Do ep_classes coincide between ep_code and ep_class?
 
 ```{r}
-read_vc(ep_path) %>% 
+ep_check %>% 
     mutate(ep_class_c = str_c("ep_class_",
                         str_match(ep_code, "ep_(..).*")[,2]
                         ),
@@ -63,7 +77,7 @@ read_vc(ep_path) %>%
 Do ep_classes coincide between ep_code and explanation?
 
 ```{r}
-read_vc(ep_path) %>% 
+ep_check %>% 
     mutate(ep_class_c1 = str_match(ep_code, "ep_(..).*")[,2],
            ep_class_c2 = str_match(explanation, "ep_(..).*")[,2],
     ) %>% 
