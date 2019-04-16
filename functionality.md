@@ -411,7 +411,10 @@ _**Needed functions: in package n2khabutils:**_
         - this holds the names, corresponding to codes in other textual data sources (`types`, `env_pressures` etc.), supporting multiple languages.
     - `read_GRTSmaster_habitats(path, file)`
         - if this is not feasible within R, an open GIS-backend needs to be called by R
+    - `read_habitatmap(path, file)`
+        - returns spatial object and long (tidy) tibble
     - `read_habitatdune(path, file)`
+    - `read_habitatstreams(path, file)`
     - `read_mhq_terrestrial_locs(path, file)`
     - `read_mhq_lentic_locs(path, file)`
     - `read_mhq_lotic_locs(path, file)`
@@ -437,10 +440,7 @@ _**Results: NOT to be written**_
 _**Needed functions: in inborutils package:**_
 
 - For reading input data:
-    - `read_habitatmap(path, file)`
-        - returns spatial object and long (tidy) tibble
     - `read_watersurfaces(path, file)`
-    - `read_habitatstreams(path, file)`
     - `read_flanders(path, file)`
     - `read_provinces(path, file)`
     - `read_sac(path, file)`
