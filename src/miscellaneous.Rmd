@@ -1,0 +1,32 @@
+---
+title: "Miscellaneous code chunks"
+date: '`r paste("Version",lubridate::now())`'
+output:
+  html_notebook:
+    number_sections: yes
+    code_folding: show
+    includes:
+      in_header: header.html
+    toc: yes
+    toc_float:
+      collapsed: no
+      smooth_scroll: no
+---
+
+```{r setup, message=FALSE, echo=FALSE}
+options(stringsAsFactors = FALSE)
+library(sp)
+library(sf)
+library(raster)
+library(tidyverse)
+library(stringr)
+library(n2khabutils)
+library(plotly)
+library(rasterVis)
+```
+This is a html notebook which you can use to add your own miscellaneous code,
+e.g. to explore some datasets before writing a function to read it,
+to prepare for writing functions, 
+to test existing n2khabutils functions, etc.
+
+
