@@ -28,3 +28,7 @@ devtools::install()
 
 remotes::install_github("inbo/n2khab-inputs", subdir = "n2khabutils")
 
+    # Referring to a specific branch:
+    remotes::install_github("inbo/n2khab-inputs",
+                            ref = "package_update",
+                            subdir = "n2khabutils")
