@@ -391,7 +391,8 @@ _**Results: NOT to be written**_
 To recall, `read_xxx()` functions typically return:
 
 - tidy formatted data (which may mean that a spatial dataset is to be kept separate from long-formatted attributes).
-    - While several `read_xxx()` functions refer to data that are more specific to n2khab-monitoring, other `read_xxx()` functions have broader interest. Therefore, place the latter (only) in the [inborutils](https://github.com/inbo/inborutils) package.
+    - While several `read_xxx()` functions refer to data that are more specific to n2khab projects, other `read_xxx()` functions have broader interest.
+    Therefore, place the latter (only) in the [inborutils](https://github.com/inbo/inborutils) package.
 - data with English variable names and labels of identifiers (such as types, pressures, ...)
 - [tibbles](https://r4ds.had.co.nz/tibbles.html) instead of dataframes
 - omit unneeded variables for n2khab projects
