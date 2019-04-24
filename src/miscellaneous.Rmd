@@ -29,4 +29,159 @@ e.g. to explore some datasets before writing a function to read it,
 to prepare for writing functions, 
 to test existing n2khabutils functions, etc.
 
+# Exploring the GRTS master grid
+
+## Correcting a flaw in the original version
+
+
+```{r}
+GRTSmaster_habitats <- 
+    raster("../data/10_raw/GRTSmaster_habitats/GRTSmaster_habitats.tif")
+GRTSmaster_habitats
+```
+
+```{r}
+inMemory(GRTSmaster_habitats)
+```
+
+```{r}
+spplot(GRTSmaster_habitats)
+```
+
+
+Oops, see right upper corner. We need to correct this data layer...
+
+First check that the zero value does indeed only occur in the upper right corner:
+
+```{r}
+GRTSmaster_habitats[GRTSmaster_habitats == 0,
+                    drop = FALSE] %>% 
+    spplot
+```
+
+Yes, this seems to be a useful criterium.
+
+<!-- ```{r} -->
+<!-- flanders <-  st_read("../data/10_raw/flanders") -->
+<!-- flanders_500 <-  -->
+<!--     flanders %>%  -->
+<!--     st_buffer(500) -->
+<!-- ``` -->
+
+
+<!-- ```{r include=FALSE} -->
+<!-- # Inspired by code from <https://datacarpentry.org/r-raster-vector-geospatial/08-vector-plot-shapefiles-custom-legend/index.html>, -->
+<!-- # however this was too heavy for plotting: -->
+<!-- ggplot() + -->
+<!--      geom_raster(data = GRTSmaster_habitats %>%  -->
+<!--                      as.data.frame(xy = TRUE),  -->
+<!--                  aes(x = x,  -->
+<!--                      y = y,  -->
+<!--                      fill = GRTSmaster_habitats)) + -->
+<!--      geom_sf(data = flanders) + -->
+<!--      geom_sf(data = flanders_500, -->
+<!--              fill = NA, -->
+<!--              colour = "red") + -->
+<!--     coord_sf() -->
+<!-- # compare with: -->
+<!-- gplot(GRTSmaster_habitats) + -->
+<!--     geom_tile(fill = value) # however, further extension seems difficult here -->
+<!-- ``` -->
+
+
+```{r}
+GRTSmaster_mask <- 
+    GRTSmaster_habitats %>% 
+    reclassify(rcl = c(1, 1e+9, 1,
+                       0, 1, NA),
+               right = FALSE,
+               filename = "../data/20_processed/GRTSmaster_mask",
+               overwrite = TRUE)
+```
+
+```{r}
+GRTSmaster_mask %>% spplot
+```
+
+
+<!-- ```{r} -->
+<!-- GRTSmaster_habitats %>% cellStats('countNA') -->
+<!-- ``` -->
+
+```{r}
+GRTSmaster_simplified <- 
+    GRTSmaster_habitats %>% 
+    mask(GRTSmaster_mask,
+         filename = "../data/20_processed/GRTSmaster_simplified")
+```
+
+
+```{r}
+GRTSmaster_simplified %>% spplot
+```
+
+How many cells have values, and how many have no value?
+
+```{r}
+valueslogical <- 
+    !(GRTSmaster_simplified %>% 
+    values %>% 
+    is.na)
+valueslogical %>% 
+    table
+```
+
+Let's compare the 'TRUE' number with the original data to check completeness:
+
+```{r}
+valueslogical_orig <- 
+    (GRTSmaster_habitats %>% 
+    values) > 0
+valueslogical_orig %>% 
+    sum(na.rm = TRUE)
+```
+
+OK, there is a complete match.
+
+Range of the values:
+
+```{r}
+GRTSmaster_simplified %>% 
+    values %>%
+    summary
+```
+
+
+Let's write the corrected version as a GeoTIFF.
+
+```{r}
+GRTSmaster_simplified %>% 
+    writeRaster(filename = "../data/20_processed/GRTSmaster_habitat.tif",
+                datatype = "INT4S")
+```
+
+And now let's check the raster header and its summary, from the newly created GeoTIFF:
+
+```{r}
+GRTSmaster_habitats <- 
+    raster("../data/20_processed/GRTSmaster_habitat.tif")
+GRTSmaster_habitats
+```
+
+```{r}
+GRTSmaster_habitats %>% 
+    spplot
+```
+
+## Ready for exploration
+
+```{r}
+GRTSmaster_habitats
+```
+
+
+
+
+
+
 
