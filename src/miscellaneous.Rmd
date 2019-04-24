@@ -156,7 +156,7 @@ Let's write the corrected version as a GeoTIFF.
 
 ```{r}
 GRTSmaster_simplified %>% 
-    writeRaster(filename = "../data/20_processed/GRTSmaster_habitat.tif",
+    writeRaster(filename = "../data/20_processed/GRTSmaster_habitats.tif",
                 datatype = "INT4S")
 ```
 
@@ -164,7 +164,7 @@ And now let's check the raster header and its summary, from the newly created Ge
 
 ```{r}
 GRTSmaster_habitats <- 
-    raster("../data/20_processed/GRTSmaster_habitat.tif")
+    raster("../data/20_processed/GRTSmaster_habitats.tif")
 GRTSmaster_habitats
 ```
 
