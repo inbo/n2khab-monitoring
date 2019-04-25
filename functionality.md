@@ -112,8 +112,11 @@ The 'base' sampling frame needs input data in order to provide the following att
 
 - spatial unit definition (ID, spatial attributes): derived from:
     - `GRTSmaster_habitats`
-    - `watersurfaces`
-    - `habitatstreams`
+    - `terr_habitatmap`
+    - `integrated_habitatmap`
+    - `mhq_terrestrial_locs`
+    - `mhq_lentic_locs`
+    - `mhq_lotic_locs`
     - `flanders` (used to restrict the previous layers, as far as needed)
 - the attributes 'type' and the type's spatial proportion (see 2.1)
 - domains:
@@ -124,7 +127,7 @@ The 'base' sampling frame needs input data in order to provide the following att
     - algorithms to join the `GRTSmaster_habitats` ranking number to spatial units (of terrestrial, lotic, lentic types respectively)
     
 In practice, it is possible to build up the base sampling frame in steps, i.e. according to the needs.
-E.g., the addition of `watersurfaces` and `habitatstreams` can also be postponed.
+E.g., the addition of `integrated_habitatmap` (which combines `terr_habitatmap` with `watersurfaces`, `habitatstreams`) can also be postponed.
     
     
 <DIV STYLE="background:#E8C3D58B;padding:10px">
@@ -228,24 +231,20 @@ _**Results: to be written into repo n2khab-mne-design (simulations) or n2khab-mn
 
 Possible dataframes or spatial objects to join this information to, include `GRTSmaster_habitats`, `groundwater_sites`, `lenticwater_sites`, ... Often, more than one type can be linked to a spatial unit and therefore the information is typically not directly part of a spatial object (they use a common identifier). Instead, a long (tidy) dataframe (tibble) is generated to enlist all types that are recorded at a location.
 
-Depending on the purpose, the type-attribute is to be derived from one of more of the following:
+Depending on the purpose, the type-attribute is to be derived from one or more of the following:
 
 - `habitatmap`
 - `habitatdune`
 - `habitatstreams`
 - `watersurfaces`
-- `mhq_terrestrial_locs`
 - `mhq_lentic_locs`
 - `mhq_lotic_locs`
 
-Moreover, it is brought in consistency, and restricted to the type codes from the following lists:
-
-- `types`
-- `scheme_types`
+Moreover, it is brought in consistency, and restricted to the type codes from the datasource `types`.
 
 Also, main types need to be linked to their corresponding _subtypes_ in order to be picked up when selections are defined at the subtype level (needed when no subtype information exists for a given spatial object).
 
-Further, extra attributes is needed in most applications -- especially when using the `habitatmap` dataset: the rank and the associated areal proportion of each row.
+Further, extra attributes are needed in most applications -- especially when using the `habitatmap` dataset: the rank and the associated areal proportion of each row.
 
 Ideally, an intermediate spatial layer is generated that combines the above layers and integrates their information.
 
@@ -257,9 +256,9 @@ _**Needed functions: in package n2khabutils:**_
 Both functions take into account type code consistency and link subtypes to main types. Both functions generate a data set consisting of both a spatial object and a long / tidy dataframe (tibble), including areal proportions.
 
 - `write_terr_habitatmap(threshold_pct, outputdir)`
-    - this function reads and integrates `habitatmap`, `habitatdune` and `mhq_terrestrial_locs`
+    - this function reads and integrates `habitatmap` and `habitatdune`
 - `write_integrated_habitatmap(threshold_pct, outputdir)`
-    - incorporates `write_terr_habitatmap()` but inserts the spatial units from `habitatstreams` and `watersurfaces` while retaining useful (type) attributes, including those from `mhq_lentic_locs` and `mhq_lotic_locs`
+    - incorporates `write_terr_habitatmap()` but inserts the spatial units from `habitatstreams` and `watersurfaces` while retaining useful (type) attributes, ideally including those from `mhq_lentic_locs` and `mhq_lotic_locs`
 
 _**Dedicated writing workflow (scripts/Rmarkdown): in repo n2khab-inputs**_
 
