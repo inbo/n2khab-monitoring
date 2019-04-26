@@ -173,11 +173,229 @@ GRTSmaster_habitats %>%
     spplot
 ```
 
-## Ready for exploration
+## Exploration
+
+### How to make a brick
 
 ```{r}
-GRTSmaster_habitats
+GRTSmaster_habitats <- 
+    raster("../data/10_raw/GRTSmaster_habitats/GRTSmaster_habitats.tif")
 ```
+
+
+```{r}
+GRTSmh_brick <- 
+    brick("../data/10_raw/GRTSmaster_habitats/GRTSmaster_habitats.tif")
+```
+
+```{r}
+inMemory(GRTSmh_brick)
+```
+
+
+```{r}
+GRTSmh_brick2 <- 
+    brick(list(GRTSmaster_habitats,
+            GRTSmaster_habitats %>% 
+                reclassify(rcl = c(1, 1e+9, 1),
+                           right = FALSE)
+        )
+    ) %>% 
+    `names<-`(c("decimal", "base4"))
+GRTSmh_brick2
+```
+
+
+```{r}
+inMemory(GRTSmh_brick2)
+```
+
+<!-- ```{r} -->
+<!-- writeRaster(GRTSmh_brick2, -->
+<!--             filename = file.path(tempdir(),"GRTSmh_brick2.tif"), -->
+<!--             datatype = "INT4S", -->
+<!--             overwrite = TRUE) -->
+<!-- ``` -->
+
+<!-- ```{r} -->
+<!-- GRTSmh_brick2 <-  -->
+<!--     brick(file.path(tempdir(),"GRTSmh_brick2.tif")) -->
+<!-- GRTSmh_brick2 -->
+<!-- ``` -->
+
+<!-- ```{r} -->
+<!-- names(GRTSmh_brick2)  <-  -->
+<!--     c("decimal", "base4") -->
+<!-- ``` -->
+
+
+### Going from base 10 to base 4: does it make sense?
+
+A dedicated function exists, however it takes so long to load the whole package that it seems a better choice to fork the specific function into n2khabutils, as an internal function.
+
+```{r}
+oro.dicom::dec2base(37784, base = 4) %>% as.numeric
+```
+
+<!-- For the `len`argument we take 14 digits, otherwise the maximum number in the grid will give an error: -->
+
+<!-- ```{r} -->
+<!-- log10(8e+7) / log10(4) -->
+<!-- ``` -->
+
+The maximum base 4 address in the grid:
+
+```{r}
+oro.dicom::dec2base(67108856, base = 4) %>% as.numeric
+```
+
+But we better use this function, which is vectorized and does not give a warning:
+
+```{r}
+source("../n2khabutils/R/baseConvert.R")
+```
+
+```{r}
+baseConvert(67108856, target = 4)
+```
+
+
+
+Let's look at an extracted portion of the GRTSmaster_habitats grid:
+
+```{r}
+GRTS_sub <- 
+    GRTSmaster_habitats[2000:2050,3000:3050, drop = FALSE]
+GRTS_sub %>% 
+    spplot
+```
+
+```{r}
+GRTS_sub_4 <- 
+    GRTS_sub %>% 
+    calc(function(x){
+            as.numeric(baseConvert(x, target = 4))
+        })
+GRTS_sub_4 %>% 
+    spplot
+```
+
+Check whether we can do the inverse and return the original data (extracting a few lines of code from [here](https://github.com/graywh/r-gmisc/blob/master/R/baseConvert.R)):
+
+```{r}
+basetodec <- function(x, base){
+    characters <- c(seq(0,9), LETTERS)
+    numbers <- structure(seq(0,35), names = characters)    
+    x <- strsplit(as.character(x), "")
+    l <- lapply(x, length)
+    f1 <- function(x, l) {
+        sum(numbers[x] * base ^ (seq(l - 1,0)))
+    }
+    mapply(f1, x, l)
+}
+```
+
+```{r}
+basetodec(100, 4)
+```
+
+```{r}
+GRTS_sub_4 %>% 
+    calc(function(x) basetodec(x, base = 4)) %>% 
+    all.equal(GRTS_sub)
+```
+
+Olé.
+
+But, does it make sense spatially; are the original GRTS addresses still reflected in this base4-conversion? Let's extract the 2nd to 6th digit and look at the pattern:
+
+```{r}
+max_digits <- 
+    GRTS_sub_4 %>% 
+    values %>% 
+    max %>% 
+    as.character %>% 
+    str_split("", simplify = TRUE) %>% 
+    length
+```
+
+```{r}
+extract_digit <- 
+    function(x, level, max_digits) {
+        withr::with_options(
+                  c(scipen = 999), 
+                  str_pad(x, 13, pad = "0")
+                  ) %>% 
+            str_sub(level, level) %>% 
+            as.integer
+    }
+```
+
+```{r}
+extract_digit(3333333333320, level = 12, max_digits = max_digits)
+```
+
+
+```{r}
+for (i in 2:6) {
+GRTS_sub_4 %>% 
+    calc(function(x) extract_digit(x, level = i, max_digits = max_digits)) %>% 
+        spplot %>% 
+        print
+}
+```
+
+Yeeha. Dare we try this on the whole raster?
+
+```{r}
+GRTSmaster_habitats %>% 
+    calc(function(x){
+            ifelse(is.na(x), NA,
+                   as.numeric(baseConvert(x, target = 4)) %>% 
+            extract_digit(level = 13, max_digits = 13)
+            )
+        }) %>% 
+    spplot
+```
+
+
+What went wrong?
+
+```{r}
+GRTSmaster_habitats %>% 
+    values %>% 
+    enframe %>% 
+    filter(!is.na(value)) %>% 
+    select(value) %>% 
+    slice(1:200) %>% 
+    arrange(value) %>% 
+    mutate(base4 = baseConvert(value, target = 4),
+           base4_num = as.numeric(base4),
+           base4_char = as.character(base4_num),
+           formatted = withr::with_options(
+                          c(scipen = 999), 
+                          str_pad(base4_num, 13, pad = "0")
+))
+```
+
+```{r}
+oro.dicom::dec2base(351070, base = 4)
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
