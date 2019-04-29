@@ -21,7 +21,7 @@ library(raster)
 library(tidyverse)
 library(stringr)
 library(n2khabutils)
-library(plotly)
+# library(plotly)
 library(rasterVis)
 ```
 This is a html notebook which you can use to add your own miscellaneous code,
@@ -231,29 +231,20 @@ inMemory(GRTSmh_brick2)
 
 ### Going from base 10 to base 4: does it make sense?
 
-A dedicated function exists, however it takes so long to load the whole package that it seems a better choice to fork the specific function into n2khabutils, as an internal function.
-
-```{r}
-oro.dicom::dec2base(37784, base = 4) %>% as.numeric
-```
-
-<!-- For the `len`argument we take 14 digits, otherwise the maximum number in the grid will give an error: -->
-
-<!-- ```{r} -->
-<!-- log10(8e+7) / log10(4) -->
-<!-- ``` -->
-
-The maximum base 4 address in the grid:
-
-```{r}
-oro.dicom::dec2base(67108856, base = 4) %>% as.numeric
-```
-
-But we better use this function, which is vectorized and does not give a warning:
+We use the following function from [here](https://github.com/graywh/r-gmisc/blob/master/R/baseConvert.R), which is vectorized and does not give a warning compared to `oro.dicom::dec2base()` (besides, it takes long to load the `oro.dicom` package):
 
 ```{r}
 source("../n2khabutils/R/baseConvert.R")
 ```
+
+
+
+```{r}
+baseConvert(37784, target = 4)
+```
+
+The maximum base 4 address in the grid:
+
 
 ```{r}
 baseConvert(67108856, target = 4)
@@ -280,28 +271,13 @@ GRTS_sub_4 %>%
     spplot
 ```
 
-Check whether we can do the inverse and return the original data (extracting a few lines of code from [here](https://github.com/graywh/r-gmisc/blob/master/R/baseConvert.R)):
-
 ```{r}
-basetodec <- function(x, base){
-    characters <- c(seq(0,9), LETTERS)
-    numbers <- structure(seq(0,35), names = characters)    
-    x <- strsplit(as.character(x), "")
-    l <- lapply(x, length)
-    f1 <- function(x, l) {
-        sum(numbers[x] * base ^ (seq(l - 1,0)))
-    }
-    mapply(f1, x, l)
-}
-```
-
-```{r}
-basetodec(100, 4)
+baseConvert(100, target = 10, base = 4)
 ```
 
 ```{r}
 GRTS_sub_4 %>% 
-    calc(function(x) basetodec(x, base = 4)) %>% 
+    calc(function(x) baseConvert(x, target = 10, base = 4)) %>% 
     all.equal(GRTS_sub)
 ```
 
@@ -315,8 +291,7 @@ max_digits <-
     values %>% 
     max %>% 
     as.character %>% 
-    str_split("", simplify = TRUE) %>% 
-    length
+    str_length
 ```
 
 ```{r}
@@ -327,7 +302,7 @@ extract_digit <-
                   str_pad(x, 13, pad = "0")
                   ) %>% 
             str_sub(level, level) %>% 
-            as.integer
+            as.numeric
     }
 ```
 
@@ -345,44 +320,57 @@ GRTS_sub_4 %>%
 }
 ```
 
-Yeeha. Dare we try this on the whole raster?
+Yeeha.
+
+We want to be able to aggregate other spatial data at the respective hierarchical levels, and still return this in a spatial way, at the desired level.
+Also, at each level we want to have the reverse hierarchical ordering available at that level, so the complete address at that level must be returned.
+We will use base 4 **fractions** as address (cf. Stevens & Olsen 2004) as this seems to be more convenient to calculate such an address at each level.
+
+We have two options to implement this:
+
+- do the processing in a dataframe context (group by a specific level, and using simple functions to go to base 4 and calculate the desired grouping level), and then go back to a raster.
+However, here we still want to be able not only to use the 32m² raster but also to work with a coarser raster (which is lighter to handle).
+- or we do raster calculations only. A brick could even be made that holds the respective levels, but this will still be at the 32 m² level, so quite a burden to calculate.
+But that would need to be done only once.
+
+An advantage in both cases is that the coupling between base 10 rank and base 4 addresses is maintained for each raster cell.
+
+So, which is more convenient / feasible?
+
+At this moment, I simply don't get to work the `baseConvert()` function to work within `calc()` when the raster contains NA values. The best approach seems to be the below one, but its results contain numbers higher than 3 for the last digits; very strange...
+
+So we'll have to go for the dataframe approach for now, at least for the calculation of the full base4 address.
+
+===
+
+Illustration of failure of the `calc()` approach:
 
 ```{r}
-GRTSmaster_habitats %>% 
-    calc(function(x){
-            ifelse(is.na(x), NA,
-                   as.numeric(baseConvert(x, target = 4)) %>% 
-            extract_digit(level = 13, max_digits = 13)
-            )
-        }) %>% 
-    spplot
-```
-
-
-What went wrong?
-
-```{r}
-GRTSmaster_habitats %>% 
-    values %>% 
-    enframe %>% 
-    filter(!is.na(value)) %>% 
-    select(value) %>% 
-    slice(1:200) %>% 
-    arrange(value) %>% 
-    mutate(base4 = baseConvert(value, target = 4),
-           base4_num = as.numeric(base4),
-           base4_char = as.character(base4_num),
-           formatted = withr::with_options(
-                          c(scipen = 999), 
-                          str_pad(base4_num, 13, pad = "0")
-))
+# options(error = browser())
+dec2base_raster <- 
+    function(x){
+            as.numeric(baseConvert(x, target = 4))                    }
+sub10 <- GRTSmaster_habitats[1:50, , drop = FALSE]
+system.time(
+    GRTSmh_base4 <- 
+    sub10 %>% 
+    calc(dec2base_raster,
+        filename = "../data/20_processed/GRTSmh_base4.tif",
+        forceapply = TRUE,
+        overwrite = TRUE)
+)
 ```
 
 ```{r}
-oro.dicom::dec2base(351070, base = 4)
+withr::with_options(c(scipen = 999),
+                    stack(sub10, GRTSmh_base4) %>% 
+                    values %>% 
+                    as_tibble %>% 
+                    filter(!is.na(layer))
+)
 ```
 
-
+===
 
 
 
