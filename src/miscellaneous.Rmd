@@ -201,7 +201,10 @@ GRTSmh_brick2 <-
                            right = FALSE)
         )
     ) %>% 
-    `names<-`(c("decimal", "base4"))
+    writeRaster(filename = file.path(tempdir(), "GRTSmh_brick2.tif"),
+                format = "GTiff", 
+                overwrite = TRUE)
+names(GRTSmh_brick2) <- (c("decimal", "base4"))
 GRTSmh_brick2
 ```
 
@@ -228,6 +231,23 @@ inMemory(GRTSmh_brick2)
 <!--     c("decimal", "base4") -->
 <!-- ``` -->
 
+A way to make an empty brick with `nl` layers, based on a specific layer:
+
+```{r eval=FALSE}
+brick(brick(GRTSmaster_habitats), nl = 14)
+```
+
+But this is MUCH quicker:
+
+```{r}
+brick(extent(GRTSmaster_habitats), 
+      nrows = 2843, 
+      ncols = 7401, 
+      nl = 14, 
+      crs = crs(GRTSmaster_habitats))
+```
+
+
 
 ### Going from base 10 to base 4: does it make sense?
 
@@ -236,7 +256,7 @@ The function gives back the base4 fraction, and probably requires 64 bit operati
 
 ```{r}
 options(scipen = 999,
-        digits = 14)
+        digits = 15)
 ```
 
 ```{r eval=FALSE}
@@ -327,11 +347,7 @@ GRTS_sub_4 %>%
     spplot
 ```
 
-```{r}
-baseConvert(100, target = 10, base = 4)
-```
-
-Check whether we can do the inverse and return the original data (extracting a few lines of code from [here](https://github.com/graywh/r-gmisc/blob/master/R/baseConvert.R)):
+Check whether we can do the inverse and return the original data (again based on [baseConvert()](https://github.com/graywh/r-gmisc/blob/master/R/baseConvert.R)):
 
 ```{r}
 basetodec <- function(x, base){
@@ -422,14 +438,18 @@ An advantage in both cases is that the coupling between base 10 rank and base 4 
 
 So, which is more convenient / feasible?
 
-At this moment, I simply don't get to work the `baseConvert()` function to work within `calc()` when the raster contains NA values. The best approach seems to be the below one, but its results contain numbers higher than 3 for the last digits; very strange...
+#### Doing raster calculations only
 
-So we'll have to go for the dataframe approach for now, at least for the calculation of the full base4 address.
+At this moment, I simply don't get to work the `dec2base4()` function to work within `calc()` when the raster contains NA values.
+See the example below: its results contain numbers higher than 3 for the last digits; very strange...
+
+So we'll have to go for the dataframe approach for now, at least for the calculation of the full base4 fraction and its derived levels.
+We will still need raster versions of these addresses and levels, in order to have spatial context.
 
 ===
 
-Illustration of failure of the `calc()` approach. It makes me wonder: is there a bug in my code or in `raster::calc()`...
-I guess `raster::calc()` doesn't cope so well with NA's.
+Illustration of failure of the `calc()` approach when the raster has NAs. It makes me wonder: is there a bug in my code or in `raster::calc()`...
+I guess `raster::calc()` doesn't cope so well with NA's in a raster.
 Tried things in a variety of ways, see above and before.
 
 ```{r}
@@ -440,7 +460,11 @@ Tried things in a variety of ways, see above and before.
 #                    as.numeric(dec2base4(x))
 #             )
 #                    }
-sub10 <- GRTSmaster_habitats[1:50, , drop = FALSE]
+sub10 <- GRTSmaster_habitats[1000:1030, 660:690, drop = FALSE]
+sub10 %>% spplot
+```
+
+```{r}
 system.time(
     GRTSmh_base4 <-
     sub10 %>% 
@@ -452,7 +476,6 @@ system.time(
 ```
 
 ```{r}
-options(scipen = 999)
 stack(sub10, GRTSmh_base4) %>% 
                     values %>% 
                     as_tibble %>% 
@@ -461,21 +484,174 @@ stack(sub10, GRTSmh_base4) %>%
                     head(10)
 ```
 
-
 ===
 
 
+#### Working via a dataframe representation
+
+Let's just try and see if after doing some math in a dataframe, we can nicely turn the dataframe into a brick layer:
+
+```{r}
+sub10brick <- brick(list(sub10,
+                         sub10)) %>% 
+    writeRaster(filename = file.path(tempdir(), "test.tif"),
+                format = "GTiff", 
+                overwrite = TRUE)
+names(sub10brick) <- c("decimal", "base4frac")
+inMemory(sub10brick)
+values(sub10brick$base4frac) <- 
+    sub10brick$decimal[] %>% 
+    enframe %>% 
+    mutate(base4frac = dec2base4(value)) %>% 
+    arrange(name) %>% 
+    pull(base4frac)
+sub10brick %>% 
+    writeRaster(filename = file.path(tempdir(), "test.tif"),
+                format = "GTiff", 
+                overwrite = TRUE)
+```
 
 
 
+The last digit shows some odd behaviour, in that one expects nearby cells to have the same digit at a high level.
+The last digit switches from 0 to 1 quite often.
+We'll ignore it for now, but it seems there is a bug waiting there to be resolved.
+
+Checking the result, this look nice:
+
+```{r}
+sub10brick[c(60:65,90:100)]
+```
+
+Plot the new layer:
+
+```{r}
+sub10brick$base4frac %>% spplot
+```
+
+
+If we read back in from the file, do we get exactly the same?
+
+```{r}
+brick(file.path(tempdir(), "test.tif"))[c(60:65,90:100)]
+```
+
+NOPE! So this seems to have to do with the data type.
+
+```{r}
+dataType(sub10brick$decimal)
+```
+
+```{r}
+dataType(sub10brick$base4frac)
+```
 
 
 
+### Climbing up the GRTS hierarchical level
 
+And now, for a more simple try to work further within the raster...
 
+```{r}
+sub10brick <- brick(list(sub10brick,
+                         sub10brick$base4frac)) %>% 
+                writeRaster(filename = file.path(tempdir(), "test.tif"),
+                format = "GTiff", 
+                overwrite = TRUE)
+names(sub10brick) <- c("decimal", "base4frac", "base4frac_2")
+inMemory(sub10brick)
+sub10brick$base4frac_2 <- 
+    sub10brick$base4frac %>% 
+    calc(function(x) {
+        a <- x * 10
+        round(a - floor(a), 12)
+    })
+```
 
+Inspect the results:
 
+```{r}
+sub10brick[c(60:65,90:100)]
+```
 
+Howdi holy - sometimes calc() yields nonsense again, and sometimes not!
+And, in case of nonsense, the data in the base4frac layer get corrupt!
+This is rather worrying.
+
+However, cannot reproduce that again, very strange...
+
+It's nice to know that things can be reproduced from the dataframe, however.
+
+```{r}
+sub10brick$base4frac_2 %>% spplot
+```
+
+Let's do another one, 2 levels up:
+
+```{r}
+sub10brick <- brick(list(sub10brick,
+                         sub10brick$base4frac)) %>% 
+                writeRaster(filename = file.path(tempdir(), "test.tif"),
+                format = "GTiff", 
+                overwrite = TRUE)
+names(sub10brick) <- c("decimal", 
+                       "base4frac", 
+                       "base4frac_2",
+                       "base4frac_4")
+inMemory(sub10brick)
+sub10brick$base4frac_2 <- 
+    sub10brick$base4frac %>% 
+    calc(function(x) {
+        a <- x * 1000
+        round(a - floor(a), 10)
+    })
+```
+
+Inspect the results:
+
+```{r}
+sub10brick[c(60:65,90:100)]
+```
+
+DAMN IT!
+All is lost now.
+I'll stop doing this with the calc() function
+
+And it seems that even via dataframes problems pop up once we come in the raster stage!
+
+```{r eval=FALSE}
+sub10brick <- brick(list(sub10brick,
+                         sub10brick$base4frac,
+                         sub10brick$base4frac)) %>% 
+                writeRaster(filename = file.path(tempdir(), "test.tif"),
+                format = "GTiff", 
+                overwrite = TRUE)
+names(sub10brick) <- c("decimal", 
+                       "base4frac", 
+                       "base4frac_2",
+                       "base4frac_4")
+values(sub10brick$base4frac_4) 
+sub10brick$base4frac[] %>% 
+    enframe %>% 
+    mutate(base4frac_4 = dec2base4(value)) %>% 
+    arrange(name) %>% 
+    pull(base4frac)
+```
+
+The problems _may_ be overcome by using `bit64::as.integer64()` and the `INT4U` dataType, but a few first tries gave other problems, so this line ends here.
+
+**To conclude:**
+
+- it appears that the long base4 numbers are held well in memory, but are badly saved in files.
+- for rasters, we will only use the _decimal_ integer numbers...
+- we will use the dataframe representation:
+    - for the base4 fraction calculation and storage (and if that goes wrong, 
+    we opt for the string representation of the base4 address!)
+    - for the different levels of the fraction
+    - for converting _those_ levels back to a decimal number
+    
+    As this is large data, it may come in handy to use specific methods (see [tutorial](https://inbo.github.io/tutorials/tutorials/r_large_data_files_handling/))
+- we will use converted decimal numbers for reconstructing lower-resolution rasters. No more bricks needed, as these don't support different resolutions.
 
 
 
