@@ -237,17 +237,42 @@ We use the following function from [here](https://github.com/graywh/r-gmisc/blob
 source("../n2khabutils/R/baseConvert.R")
 ```
 
+Vectorized version:
+
+```{r}
+dec2base4 <- 
+    function(x) {
+        ifelse(is.na(x), NA,
+            ifelse(x > 0, sapply(x, function(x) {
+                    # d <- floor(log(x, 4) + 1)
+                    paste(c("0", "1", "2", "3")[
+                        abs(diff(x %% 4^seq(max_digits,0))) %/% 4^seq(max_digits-1,0) + 1], 
+                        collapse = "")
+                }),
+                    '0'
+            )
+        )
+    }
+```
+
+```{r}
+dec2base4(NA)
+```
 
 
 ```{r}
-baseConvert(37784, target = 4)
+dec2base4(37784)
 ```
 
 The maximum base 4 address in the grid:
 
 
 ```{r}
-baseConvert(67108856, target = 4)
+dec2base4(67108856)
+```
+
+```{r}
+dec2base4(c(14, 15))
 ```
 
 
@@ -265,7 +290,7 @@ GRTS_sub %>%
 GRTS_sub_4 <- 
     GRTS_sub %>% 
     calc(function(x){
-            as.numeric(baseConvert(x, target = 4))
+            as.numeric(dec2base4(x))
         })
 GRTS_sub_4 %>% 
     spplot
@@ -347,27 +372,31 @@ Illustration of failure of the `calc()` approach:
 
 ```{r}
 # options(error = browser())
-dec2base_raster <- 
+dec2base4_raster <- 
     function(x){
-            as.numeric(baseConvert(x, target = 4))                    }
+            ifelse(is.na(x), NA,
+                   as.numeric(dec2base4(x))
+            )
+                   }
 sub10 <- GRTSmaster_habitats[1:50, , drop = FALSE]
 system.time(
-    GRTSmh_base4 <- 
+    GRTSmh_base4 <-
     sub10 %>% 
-    calc(dec2base_raster,
+    calc(dec2base4_raster,
         filename = "../data/20_processed/GRTSmh_base4.tif",
-        forceapply = TRUE,
+        # forcefun = TRUE,
         overwrite = TRUE)
 )
 ```
 
 ```{r}
-withr::with_options(c(scipen = 999),
-                    stack(sub10, GRTSmh_base4) %>% 
+options(scipen = 999)
+stack(sub10, GRTSmh_base4) %>% 
                     values %>% 
                     as_tibble %>% 
-                    filter(!is.na(layer))
-)
+                    filter(!is.na(layer)) %>% 
+                    as.matrix %>% 
+                    head(10)
 ```
 
 ===
