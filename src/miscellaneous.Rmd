@@ -494,8 +494,7 @@ Note what happens with the default datatype 'FLT4S':
 sub4 <-
     sub10 %>% 
     calc(dec2base4,
-        filename = "../data/20_processed/sub4.tif",
-        # forcefun = TRUE,
+        filename = file.path(tempdir(), "sub4.tif"),
         overwrite = TRUE)
 ```
 
@@ -521,14 +520,14 @@ However when we set the datatype to 'FLT8S', this is solved:
 sub4 <-
     sub10 %>% 
     calc(dec2base4,
-        filename = "../data/20_processed/sub4.tif",
+        filename = file.path(tempdir(), "sub4.tif"),
         datatype = "FLT8S",
         overwrite = TRUE)
 ```
 
 
 ```{r}
-sub4 <- raster("../data/20_processed/sub4.tif")
+sub4 <- raster(file.path(tempdir(), "sub4.tif"))
 sub4 %>% spplot
 ```
 
