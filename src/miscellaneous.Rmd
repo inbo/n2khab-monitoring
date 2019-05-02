@@ -375,7 +375,7 @@ dec2base4(37784)
 The maximum base 4 address in the grid:
 
 ```{r}
-dec2base4(67108856)
+dec2base4(67108857)
 ```
 
 It works on vectors with NA values:
