@@ -24,6 +24,7 @@ library(n2khabutils)
 # library(plotly)
 library(rasterVis)
 ```
+
 This is a html notebook which you can use to add your own miscellaneous code,
 e.g. to explore some datasets before writing a function to read it,
 to prepare for writing functions, 
@@ -712,6 +713,65 @@ The problems _may_ be overcome by using `bit64::as.integer64()` and the `INT4U` 
 
 
 
+### Rewinding: don't store base4 in rasters but in a dataframe
+
+And yes, the stored version in a csv does work.
+
+```{r}
+sub10[] %>% 
+    enframe %>% 
+    mutate(base4frac = dec2base4(value)) %>% 
+    (function(df) {
+        write_csv(df, file.path(tempdir(), "grts_df.csv"))
+        all.equal(df,
+                  read_csv(file.path(tempdir(), "grts_df.csv"),
+                           col_types = "idd"))
+    })
+```
+
+
+However it may grow too large for the Flemish level.
+
+Let's just try that...
+
+```{r}
+GRTSmaster_habitats[] %>% 
+    enframe %>% 
+    mutate(base4frac = dec2base4(value)) %>% 
+    write_csv(file.path("../data/20_processed", "GRTSmh_df.csv"))
+```
+
+I guess that took about 15 minutes, hum.
+
+What if we try to read such thing, is that still doable?
+
+```{r}
+test <- 
+    read_csv(file.path("../data/20_processed", "GRTSmh_df.csv"),
+             col_types = "idd")
+```
+
+This took about 30 sec, so that's still doable. The object takes about 400 MB of RAM.
+
+How large is the object in RData format?
+
+```{r}
+test %>% save(file = file.path("../data/20_processed", "GRTSmh_df.RData"))
+```
+
+This is ca. 178 MB in size, which is much smaller. It was written in about 30 sec.
+
+Let's check the result.
+
+```{r}
+test %>% str(give.attr = FALSE)
+test %>% 
+    # filter(value >= 67108840)
+    slice(base::sample.int(base::nrow(test), 30)) %>% 
+    arrange(name)
+```
+
+This seems to be very OK.
 
 
 
