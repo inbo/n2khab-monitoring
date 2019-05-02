@@ -49,8 +49,8 @@ _Explanatory notes on function arguments used further:_
 - `file`: the filename, without extension in the case of multiple files with different extensions
 - `outputdir`: the directory where the dataset is to be written (should be a subfolder of `outputdir` named as the dataset's ID)
 - `threshold_pct`: the areal percentage threshold used to withhold types from `habitatmap`
-- `resolution`: the resolution that the user wants for the evaluation grid
-- `evaluation_grid`: coarse grid based on `GRTSmaster_habitats`
+- `resolution`: the resolution that the user wants for the evaluation raster
+- `evaluation_raster`: coarse raster based on `GRTSmaster_habitats`
 - `cell_samplesizes`: dataframe with sample size per evaluation cell
 - `connection`: database connection
 
@@ -106,7 +106,7 @@ _**Results: to be written into repo n2khab-samplingframes**_
 A 'base' sampling frame is implemented as a unioned **dataframe** of the spatial target populations of the respective types (for all monitoring schemes of MNE or MHQ as a whole).
 Each row represents a spatial unit that belongs to the target population of one type.
 The 'base' sampling frame can either be separated between MNE and MHQ, or provided with a TRUE/FALSE attribute for MNE and MHQ.
-The spatial unit can correspond to a grid cell from a GRTS master grid (terrestrial types), a line segment (lotic types) or a polygon of non-fixed size (lentic types).
+The spatial unit can correspond to a raster cell from a GRTS master raster (terrestrial types), a line segment (lotic types) or a polygon of non-fixed size (lentic types).
 
 The 'base' sampling frame needs input data in order to provide the following attributes when drawing samples:
 
@@ -149,18 +149,18 @@ _**Results: to be written into repo n2khab-samplingframes**_
 
 - relevant existing measurement locations with 'usefulness' attributes (see 2.3)
 - `samplingframe`
-- evaluation grid
+- evaluation raster
 - aimed sample size for each evaluation cell
 - sampling design attributes, especially spatial sample sizes
 
-Plus the supporting functions (see [further](#intermediate)) to scale up `GRTSmaster_habitats` to make the evaluation grid and calculate the expected sample size for each evaluation cell.
+Plus the supporting functions (see [further](#intermediate)) to scale up `GRTSmaster_habitats` to make the evaluation raster and calculate the expected sample size for each evaluation cell.
 
 <DIV STYLE="background:#E8C3D58B;padding:10px">
 
 _**Needed functions: in repo n2khab-mne-design:**_
 
-- `sample_legacy_sites_groundwater(evaluation_grid, cell_samplesizes, outputdir)`
-- `sample_probabilistic_sites_groundwater(evaluation_grid, cell_samplesizes, outputdir)`
+- `sample_legacy_sites_groundwater(evaluation_raster, cell_samplesizes, outputdir)`
+- `sample_probabilistic_sites_groundwater(evaluation_raster, cell_samplesizes, outputdir)`
 
 The suffix `_groundwater` can also be replaced by something else. Subprogramme (e.g. groundwater) specific functions are used here because of the peculiarities.
 
@@ -358,7 +358,7 @@ _**Needed functions: in package n2khabutils:**_
     - takes a spatial R object (polygons, line segments, points), makes a spatial join with `GRTSmaster_habitats` and returns a spatial R object with GRTS attributes added;
     - potentially involves an open GIS-backend;
     - for polygons and line segments, implements a point selection procedure to comply with MHQ selections.
-- `evaluation_grid(resolution)`
+- `write_evaluation_raster(resolution)`
     - i.e. a scaled up version (using `resolution`) of `GRTSmaster_habitats`
 - `soiltexture_coarse()`
     - takes a vector with soil type codes (character of factor) and converts this into a factor with three coarse texture classes (fine / coarse / peat)
@@ -374,7 +374,7 @@ _**Results: NOT to be written**_
 
 _**Needed functions: in repo n2khab-mne-design:**_
 
-- `expected_sample_size(programme, scheme, evaluation_grid)`
+- `expected_sample_size(programme, scheme, evaluation_raster)`
 
 _**Results: NOT to be written**_
 
@@ -409,7 +409,7 @@ _**Needed functions: in package n2khabutils:**_
     - `read_types(path, file)`
     - `read_namelist(path, file)`
         - this holds the names, corresponding to codes in other textual data sources (`types`, `env_pressures` etc.), supporting multiple languages.
-    - `read_GRTSmaster_habitats(path, file)`
+    - `read_GRTSmh(path, file)`
         - if this is not feasible within R, an open GIS-backend needs to be called by R
     - `read_habitatmap(path, file)`
         - returns spatial object and long (tidy) tibble
