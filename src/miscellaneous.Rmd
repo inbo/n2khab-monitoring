@@ -498,43 +498,32 @@ So, which is more convenient / feasible?
 
 #### Doing raster calculations only
 
-At this moment, I simply don't get to work the `dec2base4()` function to work within `calc()` when the raster contains NA values.
-See the example below: its results contain numbers higher than 3 for the last digits; very strange...
-
-So we'll have to go for the dataframe approach for now, at least for the calculation of the full base4 fraction and its derived levels.
-We will still need raster versions of these addresses and levels, in order to have spatial context.
-
-===
-
-Illustration of failure of the `calc()` approach when the raster has NAs. It makes me wonder: is there a bug in my code or in `raster::calc()`...
-I guess `raster::calc()` doesn't cope so well with NA's in a raster.
 Tried things in a variety of ways, see above and before.
+Settling now for the approach that works best.
 
 ```{r}
-# options(error = browser())
-# dec2base4_raster <- 
-#     function(x){
-#             ifelse(is.na(x), NA,
-#                    as.numeric(dec2base4(x))
-#             )
-#                    }
 sub10 <- GRTSmaster_habitats[1000:1030, 660:690, drop = FALSE]
 sub10 %>% spplot
 ```
 
+See what happens with the default datatype 'FLT4S':
+
 ```{r}
-system.time(
-    GRTSmh_base4 <-
+sub4 <-
     sub10 %>% 
     calc(dec2base4,
-        filename = "../data/20_processed/GRTSmh_base4.tif",
+        filename = "../data/20_processed/sub4.tif",
         # forcefun = TRUE,
         overwrite = TRUE)
-)
 ```
 
 ```{r}
-stack(sub10, GRTSmh_base4) %>% 
+dataType(sub4)
+```
+
+
+```{r}
+stack(sub10, sub4) %>% 
                     values %>% 
                     as_tibble %>% 
                     filter(!is.na(layer)) %>% 
@@ -542,10 +531,76 @@ stack(sub10, GRTSmh_base4) %>%
                     head(10)
 ```
 
-===
+Whoopsie, look what happened to the digits!
+
+However when we set the datatype to 'FLT8S', this is solved:
+
+```{r}
+sub4 <-
+    sub10 %>% 
+    calc(dec2base4,
+        filename = "../data/20_processed/sub4.tif",
+        datatype = "FLT8S",
+        overwrite = TRUE)
+```
 
 
-#### Working via a dataframe representation
+```{r}
+sub4 <- raster("../data/20_processed/sub4.tif")
+sub4 %>% spplot
+```
+
+```{r}
+sub4 %>% dataType()
+```
+
+```{r}
+sub4[!is.na(sub4)] %>% 
+    head(10)
+```
+
+```{r}
+stack(sub10, sub4) %>% 
+                    values %>% 
+                    as_tibble %>% 
+                    filter(!is.na(layer)) %>% 
+                    as.matrix %>% 
+                    head(10)
+```
+
+This looks perfect and promising!
+
+Let's try to do this for the whole dataset.
+
+```{r}
+system.time(
+GRTSmh_base4 <-
+    GRTSmaster_habitats %>% 
+    calc(dec2base4,
+        filename = "../data/20_processed/GRTSmh_base4.tif",
+        datatype = "FLT8S",
+        overwrite = TRUE)
+)
+```
+
+This took about 15 minutes and the resulting file is 131 MB large, which is rather acceptable, though large.
+So we may opt to generate derived layers (cf. evaluation grid) only using decimal ranking numbers, not with the base4 notation.
+
+The file's contents seem fine:
+
+```{r}
+GRTSmh_base4 <- raster("../data/20_processed/GRTSmh_base4.tif")
+GRTSmh_base4
+((GRTSmh_base4 %>% 
+    values) > 0) %>% 
+    sum(na.rm = TRUE)
+GRTSmh_base4[15e+6:(15e+6 + 20)]
+```
+
+
+#### Working via a dataframe representation (OBSOLETE!)
+
+_Note: this was still being done with the FLT4S datatype... However it shows that calculation and storage of such a dataframe is not as efficient as raster calculation (which went double as fast, on a single CPU core)._
 
 Let's just try and see if after doing some math in a dataframe, we can nicely turn the dataframe into a brick layer:
 
@@ -607,6 +662,103 @@ dataType(sub10brick$base4frac)
 
 
 ### Climbing up the GRTS hierarchical level
+
+It feels useful to calculate coarser grids up to the 16 km level, cf.:
+
+```{r}
+res <- 32 * 2^(0:12) / 1000
+names(res) <- 0:12
+res
+```
+
+We will declare the names of the above vector (0:12) as the hierarchical levels of the grid.
+So we focus on levels 0 to 9.
+We want to save a rasterbrick (multilayered tif) with the decimal ranking numbers for those levels.
+Saving that as an intermediate dataset will make it easier to work further (dissolving, joining etc).
+
+Let's try this with the subset.
+
+```{r warning=FALSE}
+sub10brick <- 
+    brick(extent(sub4), 
+          nrows = 31, 
+          ncols = 31, 
+          nl = 10, 
+          crs = crs(sub4)
+          ) %>% 
+    writeRaster(filename = file.path(tempdir(), "sub10brick.tif"),
+                format = "GTiff", 
+                datatype = "INT4S",
+                overwrite = TRUE)
+names(sub10brick) <- str_c("level", 0:9)
+sub10brick
+```
+
+```{r warning=FALSE}
+base4frac2dec_s <- function(x, level) {
+            multipliers <- as.matrix(4 ^ ((13 - level - 1):0))
+            ifelse(is.na(x), NA, {
+                a <- x * 10 ^ level
+                a <- round(a - floor(a), 13 - level)
+                a <- a %>% 
+                    as.character %>% 
+                    str_sub(start = 3) %>% 
+                    str_pad(width = 13 - level,
+                            side = "right",
+                            pad = "0") %>% 
+                    str_split("", simplify = TRUE) %>% 
+                    as.numeric
+                t(a) %*% multipliers
+            }
+            )
+}
+base4frac2dec <- 
+    function(x, level) {
+        sapply(x, 
+               function(x) base4frac2dec_s(x, level = level))
+        }
+system.time({
+for (i in 0:9) {
+    sub10brick[[i + 1]] <-
+        sub4 %>% 
+        calc(function(x) base4frac2dec(x, level = i))
+    sub10brick %>%
+    writeRaster(filename = file.path(tempdir(), "sub10brick.tif"),
+                format = "GTiff",
+                datatype = "INT4S",
+                overwrite = TRUE)
+}
+names(sub10brick) <- str_c("level", 0:9)
+})
+sub10brick
+```
+
+```{r}
+sub10brick <- 
+    brick(file.path(tempdir(), "sub10brick.tif"))
+names(sub10brick) <- str_c("level", 0:9)
+sub10brick
+dataType(sub10brick)
+```
+
+Have a look at maps:
+
+```{r}
+lapply(as.list(sub10brick), spplot)
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 And now, for a more simple try to work further within the raster...
 
