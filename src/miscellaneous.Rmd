@@ -36,13 +36,28 @@ to test existing n2khabutils functions, etc.
 
 ```{r}
 GRTSmaster_habitats <- 
-    raster("../data/10_raw/GRTSmaster_habitats/GRTSmaster_habitats.tif")
+    raster("~/Downloads/GRTSmaster_habitats.tif") # i.e. version 1
 GRTSmaster_habitats
 ```
 
 ```{r}
 inMemory(GRTSmaster_habitats)
 ```
+
+```{r}
+dataType(GRTSmaster_habitats)
+```
+
+Are all values unique?
+
+```{r}
+GRTSmaster_habitats[] %>% 
+    enframe %>% 
+    count(value) %>% 
+    filter(n > 1)
+```
+
+Watch the zeroes!
 
 ```{r}
 spplot(GRTSmaster_habitats)
@@ -88,32 +103,19 @@ Yes, this seems to be a useful criterium.
 <!--     geom_tile(fill = value) # however, further extension seems difficult here -->
 <!-- ``` -->
 
-
-```{r}
-GRTSmaster_mask <- 
-    GRTSmaster_habitats %>% 
-    reclassify(rcl = c(1, 1e+9, 1,
-                       0, 1, NA),
-               right = FALSE,
-               filename = "../data/20_processed/GRTSmaster_mask",
-               overwrite = TRUE)
-```
-
-```{r}
-GRTSmaster_mask %>% spplot
-```
-
-
-<!-- ```{r} -->
-<!-- GRTSmaster_habitats %>% cellStats('countNA') -->
-<!-- ``` -->
-
 ```{r}
 GRTSmaster_simplified <- 
-    GRTSmaster_habitats %>% 
-    mask(GRTSmaster_mask,
-         filename = "../data/20_processed/GRTSmaster_simplified")
+    GRTSmaster_habitats[GRTSmaster_habitats > 0,
+                        drop = FALSE]
 ```
+
+```{r}
+GRTSmaster_simplified[] %>% 
+    enframe %>% 
+    count(value) %>% 
+    filter(n > 1)
+```
+
 
 
 ```{r}
@@ -163,24 +165,79 @@ GRTSmaster_simplified %>%
 And now let's check the raster header and its summary, from the newly created GeoTIFF:
 
 ```{r}
-GRTSmaster_habitats <- 
+GRTSmaster_habitats2 <- 
     raster("../data/20_processed/GRTSmaster_habitats.tif")
-GRTSmaster_habitats
+GRTSmaster_habitats2
 ```
 
+
+Range of the values:
+
 ```{r}
-GRTSmaster_habitats %>% 
+GRTSmaster_habitats2 %>% 
+    values %>%
+    summary
+```
+
+Datatype:
+
+```{r}
+dataType(GRTSmaster_habitats2)
+```
+
+
+```{r}
+GRTSmaster_habitats2 %>% 
     spplot
 ```
 
-## Exploration
+Are all values unique?
 
-### How to make a brick
+```{r}
+GRTSmaster_habitats2[] %>% 
+    enframe %>% 
+    count(value) %>% 
+    filter(n > 1)
+```
+
+Do the values match between version 1 and version 2?
+
+```{r}
+result <- 
+    overlay(x = GRTSmaster_habitats, 
+            y = GRTSmaster_habitats2, 
+            filename = file.path(tempdir(), "result.tif"),
+            datatype = "INT2S",
+            fun = function(x, y) {
+                return(as.integer(x == y))
+            }
+    )
+```
+
+```{r}
+result
+```
+
+```{r}
+result[] %>% 
+    table
+```
+
+OK, there is a complete match.
+
+```{r}
+spplot(result)
+```
+
+
+## Exploration
 
 ```{r}
 GRTSmaster_habitats <- 
     raster("../data/10_raw/GRTSmaster_habitats/GRTSmaster_habitats.tif")
 ```
+
+### How to make a brick
 
 
 ```{r}
