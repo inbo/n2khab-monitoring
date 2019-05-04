@@ -1,0 +1,92 @@
+# Settings
+
+```{r}
+datapath <- "../../data"
+```
+
+
+# Prerequisites
+
+```{r}
+GRTSmaster_habitats <- 
+    read_GRTSmh(datapath)
+GRTSmaster_habitats
+```
+
+```{r}
+dir.create(str_c(datapath, "/20_processed/GRTSmh_base4frac"), recursive = TRUE)
+```
+
+
+# Execution
+
+```{r}
+system.time(
+GRTSmh_base4frac <-
+    GRTSmaster_habitats %>% 
+    calc(dec_to_base4frac,
+        filename = "../../data/20_processed/GRTSmh_base4frac/GRTSmh_base4frac.tif",
+        datatype = "FLT8S",
+        overwrite = TRUE)
+)
+```
+
+# Checks
+
+```{r}
+GRTSmh_base4frac <- read_GRTSmh_base4frac(datapath)
+GRTSmh_base4frac
+```
+
+Are all values unique?
+
+```{r}
+GRTSmh_base4frac[] %>% 
+    enframe %>% 
+    count(value) %>% 
+    filter(n > 1, !is.na(value)) %>% 
+    nrow == 0
+```
+
+Investigating the map of a subset:
+
+```{r}
+sub4 <- GRTSmh_base4frac[1000:1070, 660:730, drop = FALSE]
+sub4 %>% spplot
+```
+
+Checking the spatial consistency of the base 4 digits:
+
+```{r}
+extract_digit_s <- 
+    function(x, level) {
+            ifelse(is.na(x), NA,{
+                    as.character(x) %>% 
+                    str_pad(13, pad = "0") %>% 
+                    str_sub(level, level) %>% 
+                    as.numeric
+            })
+    }
+extract_digit <- function(x, level) {
+    sapply(x, function(x) extract_digit_s(x, level = level))
+}
+for (i in 2:7) {
+sub4 %>% 
+    calc(function(x) extract_digit(x * 10 ^ 13, 
+                                   level = i)) %>% 
+        spplot %>% 
+        print
+}
+```
+
+
+
+
+
+
+
+
+
+
+
+
