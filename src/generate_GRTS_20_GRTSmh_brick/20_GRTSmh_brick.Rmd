@@ -1,0 +1,109 @@
+# Settings
+
+```{r}
+datapath <- "../../data"
+```
+
+
+# Prerequisites
+
+```{r}
+GRTSmaster_habitats <- 
+    read_GRTSmh(datapath)
+GRTSmaster_habitats
+```
+
+
+```{r}
+GRTSmh_base4frac <- 
+    read_GRTSmh_base4frac(datapath)
+GRTSmh_base4frac
+```
+
+```{r}
+dir.create(str_c(datapath, "/20_processed/GRTSmh_brick"), recursive = TRUE)
+```
+
+Make an empty brick with the appropriate nlayers, extent, resolution and crs:
+
+```{r warning=FALSE}
+GRTSmh_brick <- 
+    brick(extent(GRTSmh_base4frac), 
+          nrows = 2843, 
+          ncols = 7401, 
+          nl = 10, 
+          crs = crs(GRTSmh_base4frac)
+          ) %>% 
+    writeRaster(filename = "../../data/20_processed/GRTSmh_brick/GRTSmh_brick.tif",
+                format = "GTiff", 
+                datatype = "INT4S",
+                overwrite = TRUE)
+names(GRTSmh_brick) <- str_c("level", 0:9)
+GRTSmh_brick
+```
+
+
+# Execution
+
+```{r warning=FALSE}
+GRTSmh_brick[[1]] <-
+        GRTSmaster_habitats
+GRTSmh_brick %>%
+    writeRaster(filename = "../../data/20_processed/GRTSmh_brick/GRTSmh_brick.tif",
+                format = "GTiff",
+                datatype = "INT4S",
+                overwrite = TRUE)
+```
+
+
+```{r warning=FALSE}
+system.time({
+for (i in 1:9) {
+    cat("Starting level", i, "...\n")
+    
+    GRTSmh_brick[[i + 1]] <-
+        GRTSmh_base4frac %>% 
+        calc(function(x) base4frac_to_dec(x, level = i))
+    GRTSmh_brick %>%
+    writeRaster(filename = "../../data/20_processed/GRTSmh_brick/GRTSmh_brick.tif",
+                format = "GTiff",
+                datatype = "INT4S",
+                overwrite = TRUE)
+    
+    cat("Level", i, "finished!\n")
+}
+})
+```
+
+
+
+# Checks
+
+```{r}
+GRTSmh_brick <- read_GRTSmh(datapath, brick = TRUE)
+GRTSmh_brick
+```
+
+```{r}
+GRTSmh_brick %>% summary
+```
+
+Maps of a subset:
+
+```{r}
+subbrick <- GRTSmh_brick[1000:1200, 600:800, drop = FALSE]
+lapply(as.list(subbrick[[1:10]]), spplot)
+```
+
+```{r}
+lapply(as.list(GRTSmh_brick[[7:10]]), spplot)
+```
+
+
+
+
+
+
+
+
+
