@@ -11,3 +11,4 @@ hashes.csv
 *.tar.gz
 .httr-oauth
 src/**/*.md
+_book*
