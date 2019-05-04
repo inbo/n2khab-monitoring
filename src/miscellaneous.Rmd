@@ -656,14 +656,108 @@ for (i in 0:9) {
                 datatype = "INT4S",
                 overwrite = TRUE)
 }
-
+})
 ```
+
+<!-- ```{r warning=FALSE} -->
+<!-- i <- 3 -->
+<!-- system.time({ -->
+<!-- layer3 <- -->
+<!--         sub4 %>%  -->
+<!--         calc(function(x) base4frac2dec(x, level = i), -->
+<!--              filename = file.path(tempdir(), "layer3.tif"), -->
+<!--                 format = "GTiff", -->
+<!--                 datatype = "INT4S", -->
+<!--                 overwrite = TRUE) -->
+<!-- }) -->
+<!-- ``` -->
+
+
+Parallel computation of the brick with `foreach()` may reduce the needed time for calculation, BUT gave different results (inspection of minima and maxima per layer); this may perhaps have to do with a badly exported environment in the foreach function:
+
+```{r warning=FALSE, eval=FALSE}
+library(doParallel)
+cl <- makeCluster(detectCores())
+registerDoParallel(cl)
+system.time({
+foreach(i = 0:9,
+        .export = c("%>%",
+                    "calc",
+                    "str_sub",
+                    "str_pad",
+                    "str_split",
+                    "writeRaster")) %dopar% {
+    sub10brick[[i + 1]] <-
+        sub4 %>% 
+        calc(function(x) base4frac2dec(x, level = i))
+    sub10brick %>%
+    writeRaster(filename = file.path(tempdir(), "sub10brick.tif"),
+                format = "GTiff",
+                datatype = "INT4S",
+                overwrite = TRUE)
+}
+})
+# foreach(i = 0:9,
+#         .packages = c("raster",
+#                       "tidyverse",
+#                       "stringr")) %dopar% {
+#     sub10brick[[i + 1]] <-
+#         sub4 %>% 
+#         calc(function(x) base4frac2dec(x, level = i))
+#     sub10brick %>%
+#     writeRaster(filename = file.path(tempdir(), "sub10brick.tif"),
+#                 format = "GTiff",
+#                 datatype = "INT4S",
+#                 overwrite = TRUE)
+# }
+# })
+stopCluster(cl)
+```
+
+Parallel computation of the brick with `clusterR()` ([source](https://stackoverflow.com/questions/44266752/replace-specific-value-in-each-band-of-raster-brick-in-r)) does not work well:
+
+```{r warning=FALSE, eval=FALSE}
+beginCluster()
+base4frac2dec <- 
+    function(x) {
+        sapply(x, 
+               function(x) base4frac2dec_s(x, level = i))
+    }
+calcfun <- function(x) calc(x, fun = base4frac2dec)
+y <- clusterR(sub4, calc, args = list(fun = base4frac2dec))
+
+# nr_nodes <- 3 #number of cores to use for clusterR function (max recommended: ncores - 1)
+# calcfun <- function(x) base4frac2dec(x, level = i)
+  #initialize cluster
+  beginCluster()
+cl <- getCluster()  
+library(parallel)
+for (i in 0:9) {
+
+  # cat(paste("Currently processing layer:", i + 1,"/",nlayers(sub10brick), "\n"))
+
+  
+
+  # compute
+  sub10brick[[i + 1]] <- clusterR(sub4,
+                                calc,
+                                args = list(fun = base4frac2dec))
+    # clusterExport(cl, "i")
+    
+    # sub10brick[[i + 1]] <- 
+    #     sub4 %>% 
+    #     calc(function(x){ parSapply(cl, x, base4frac2dec)})
+    
+}
+  #end cluster
+  endCluster()
+```
+
 
 Level renaming and control:
 
 ```{r warning=FALSE}
 names(sub10brick) <- str_c("level", 0:9)
-})
 sub10brick
 ```
 
