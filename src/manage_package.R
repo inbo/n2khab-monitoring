@@ -6,6 +6,7 @@
 # library(usethis)
 # usethis::create_package(path = "../n2khabutils")
 # use_gpl3_license(name = "Research Institute for Nature and Forest")
+# usethis::use_vignette("vign-010_reference_lists")
 
 
 

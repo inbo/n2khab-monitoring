@@ -12,3 +12,5 @@ hashes.csv
 .httr-oauth
 src/**/*.md
 _book*
+inst/doc
+
