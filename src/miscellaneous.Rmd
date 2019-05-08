@@ -21,9 +21,10 @@ library(raster)
 library(tidyverse)
 library(stringr)
 library(n2khabutils)
-library(plotly)
+# library(plotly)
 library(rasterVis)
 ```
+
 This is a html notebook which you can use to add your own miscellaneous code,
 e.g. to explore some datasets before writing a function to read it,
 to prepare for writing functions, 
@@ -36,13 +37,28 @@ to test existing n2khabutils functions, etc.
 
 ```{r}
 GRTSmaster_habitats <- 
-    raster("../data/10_raw/GRTSmaster_habitats/GRTSmaster_habitats.tif")
+    raster("~/Downloads/GRTSmaster_habitats.tif") # i.e. version 1
 GRTSmaster_habitats
 ```
 
 ```{r}
 inMemory(GRTSmaster_habitats)
 ```
+
+```{r}
+dataType(GRTSmaster_habitats)
+```
+
+Are all values unique?
+
+```{r}
+GRTSmaster_habitats[] %>% 
+    enframe %>% 
+    count(value) %>% 
+    filter(n > 1)
+```
+
+Watch the zeroes!
 
 ```{r}
 spplot(GRTSmaster_habitats)
@@ -88,32 +104,19 @@ Yes, this seems to be a useful criterium.
 <!--     geom_tile(fill = value) # however, further extension seems difficult here -->
 <!-- ``` -->
 
-
-```{r}
-GRTSmaster_mask <- 
-    GRTSmaster_habitats %>% 
-    reclassify(rcl = c(1, 1e+9, 1,
-                       0, 1, NA),
-               right = FALSE,
-               filename = "../data/20_processed/GRTSmaster_mask",
-               overwrite = TRUE)
-```
-
-```{r}
-GRTSmaster_mask %>% spplot
-```
-
-
-<!-- ```{r} -->
-<!-- GRTSmaster_habitats %>% cellStats('countNA') -->
-<!-- ``` -->
-
 ```{r}
 GRTSmaster_simplified <- 
-    GRTSmaster_habitats %>% 
-    mask(GRTSmaster_mask,
-         filename = "../data/20_processed/GRTSmaster_simplified")
+    GRTSmaster_habitats[GRTSmaster_habitats > 0,
+                        drop = FALSE]
 ```
+
+```{r}
+GRTSmaster_simplified[] %>% 
+    enframe %>% 
+    count(value) %>% 
+    filter(n > 1)
+```
+
 
 
 ```{r}
@@ -163,22 +166,679 @@ GRTSmaster_simplified %>%
 And now let's check the raster header and its summary, from the newly created GeoTIFF:
 
 ```{r}
-GRTSmaster_habitats <- 
+GRTSmaster_habitats2 <- 
     raster("../data/20_processed/GRTSmaster_habitats.tif")
-GRTSmaster_habitats
+GRTSmaster_habitats2
 ```
 
+
+Range of the values:
+
 ```{r}
-GRTSmaster_habitats %>% 
+GRTSmaster_habitats2 %>% 
+    values %>%
+    summary
+```
+
+Datatype:
+
+```{r}
+dataType(GRTSmaster_habitats2)
+```
+
+
+```{r}
+GRTSmaster_habitats2 %>% 
     spplot
 ```
 
-## Ready for exploration
+Are all values unique?
 
 ```{r}
-GRTSmaster_habitats
+GRTSmaster_habitats2[] %>% 
+    enframe %>% 
+    count(value) %>% 
+    filter(n > 1)
 ```
 
+Do the values match between version 1 and version 2?
+
+```{r}
+result <- 
+    overlay(x = GRTSmaster_habitats, 
+            y = GRTSmaster_habitats2, 
+            filename = file.path(tempdir(), "result.tif"),
+            datatype = "INT2S",
+            fun = function(x, y) {
+                return(as.integer(x == y))
+            }
+    )
+```
+
+```{r}
+result
+```
+
+```{r}
+result[] %>% 
+    table
+```
+
+OK, there is a complete match.
+
+```{r}
+spplot(result)
+```
+
+
+## Working on the GRTS master grid
+
+```{r}
+GRTSmaster_habitats <- 
+    raster("../data/10_raw/GRTSmaster_habitats/GRTSmaster_habitats.tif")
+```
+
+### How to make a brick
+
+
+```{r}
+GRTSmh_brick <- 
+    brick("../data/10_raw/GRTSmaster_habitats/GRTSmaster_habitats.tif")
+```
+
+```{r}
+inMemory(GRTSmh_brick)
+```
+
+
+```{r}
+GRTSmh_brick2 <- 
+    brick(list(GRTSmaster_habitats,
+            GRTSmaster_habitats %>% 
+                reclassify(rcl = c(1, 1e+9, 1),
+                           right = FALSE)
+        )
+    ) %>% 
+    writeRaster(filename = file.path(tempdir(), "GRTSmh_brick2.tif"),
+                format = "GTiff", 
+                overwrite = TRUE)
+names(GRTSmh_brick2) <- (c("decimal", "base4"))
+GRTSmh_brick2
+```
+
+
+```{r}
+inMemory(GRTSmh_brick2)
+```
+
+<!-- ```{r} -->
+<!-- writeRaster(GRTSmh_brick2, -->
+<!--             filename = file.path(tempdir(),"GRTSmh_brick2.tif"), -->
+<!--             datatype = "INT4S", -->
+<!--             overwrite = TRUE) -->
+<!-- ``` -->
+
+<!-- ```{r} -->
+<!-- GRTSmh_brick2 <-  -->
+<!--     brick(file.path(tempdir(),"GRTSmh_brick2.tif")) -->
+<!-- GRTSmh_brick2 -->
+<!-- ``` -->
+
+<!-- ```{r} -->
+<!-- names(GRTSmh_brick2)  <-  -->
+<!--     c("decimal", "base4") -->
+<!-- ``` -->
+
+A way to make an empty brick with `nl` layers, based on a specific layer:
+
+```{r eval=FALSE}
+brick(brick(GRTSmaster_habitats), nl = 14)
+```
+
+But this is MUCH quicker:
+
+```{r}
+brick(extent(GRTSmaster_habitats), 
+      nrows = 2843, 
+      ncols = 7401, 
+      nl = 14, 
+      crs = crs(GRTSmaster_habitats))
+```
+
+
+
+### Going from base 10 to base 4: does it make sense?
+
+We make the function `dec2base4()` based on [baseConvert()](https://github.com/graywh/r-gmisc/blob/master/R/baseConvert.R), which is vectorized and does not give a warning compared to `oro.dicom::dec2base()` (besides, it takes long to load the `oro.dicom` package).
+The function gives back the base4 fraction, and probably requires 64 bit operation in R (double is 64 bit; plain integer representations (32-bit) were not sufficient, cf. the non-implemented intermediate `bit64::integer64` base4 representation below).
+
+```{r}
+options(scipen = 999,
+        digits = 15)
+```
+
+```{r }
+dec2base4_s <- 
+    function(x) {
+        ifelse(is.na(x), NA,
+            as.double(
+                ifelse(x > 0,{
+                    d <- floor(log(x, 4) + 1)
+                    paste(c("0", "1", "2", "3")[
+                        as.integer(abs(diff(x %% 4 ^ seq(d, 0))) %/% 
+                                       4 ^ seq(d - 1, 0) + 1)], 
+                        collapse = "")
+                },
+                    '0'
+            )) / 10 ^ 13
+        )
+    }
+```
+
+
+```{r}
+dec2base4 <- 
+    function(x) sapply(x, dec2base4_s)
+```
+
+Examples:
+
+```{r}
+dec2base4(NA)
+```
+
+
+```{r}
+dec2base4(37784)
+```
+
+The maximum base 4 address in the grid:
+
+```{r}
+dec2base4(67108857)
+```
+
+It works on vectors with NA values:
+
+```{r}
+dec2base4(c(14, 15, NA, 456))
+```
+
+
+
+Let's look at an extracted portion of the GRTSmaster_habitats grid:
+
+```{r}
+GRTS_sub <- 
+    GRTSmaster_habitats[2000:2050,3000:3050, drop = FALSE]
+GRTS_sub %>% 
+    spplot
+```
+
+```{r}
+GRTS_sub_4 <- 
+    GRTS_sub %>% 
+    calc(function(x){
+            dec2base4(x)
+        })
+GRTS_sub_4 %>% 
+    spplot
+```
+
+Check whether we can do the inverse and return the original data (again based on [baseConvert()](https://github.com/graywh/r-gmisc/blob/master/R/baseConvert.R)):
+
+```{r}
+basetodec <- function(x, base){
+    characters <- c(seq(0,9), LETTERS)
+    numbers <- structure(seq(0,35), names = characters)    
+    x <- strsplit(as.character(x), "")
+    l <- lapply(x, length)
+    f1 <- function(x, l) {
+        sum(numbers[x] * base ^ (seq(l - 1,0)))
+    }
+    mapply(f1, x, l)
+}
+```
+
+```{r}
+GRTS_sub_4 %>% 
+    calc(function(x) basetodec(x * 10 ^ 13, base = 4)) %>% 
+    all.equal(GRTS_sub)
+```
+
+Olé.
+
+```{r}
+stack(GRTS_sub, GRTS_sub_4) %>% 
+                    values %>% 
+                    as_tibble %>% 
+                    as.matrix %>% 
+                    head(10)
+```
+
+This seems to work perfectly with this raster.
+
+But first, does it make sense spatially; are the original GRTS addresses still reflected in this base4-conversion? Let's extract the 2nd to 6th digit and look at the pattern:
+
+```{r}
+max_digits <- 
+    c(GRTSmaster_habitats@data@max,
+      GRTSmaster_habitats@data@max - 1) %>% 
+    dec2base4 %>% 
+    as.character %>% 
+    (function(x) str_length(x) - 2) %>% 
+    max
+```
+
+```{r}
+extract_digit <- 
+    function(x, level, max_digits) {
+        withr::with_options(
+                  c(scipen = 999), 
+                  str_pad(x, max_digits, pad = "0")
+                  ) %>% 
+            str_sub(level, level) %>% 
+            as.numeric
+    }
+```
+
+```{r}
+extract_digit(3333333333320, level = 12, max_digits = max_digits)
+```
+
+
+```{r}
+for (i in 2:6) {
+GRTS_sub_4 %>% 
+    calc(function(x) extract_digit(x * 10 ^ 13, 
+                                   level = i, 
+                                   max_digits = max_digits)) %>% 
+        spplot %>% 
+        print
+}
+```
+
+Yeeha.
+
+We want to be able to aggregate other spatial data at the respective hierarchical levels, and still return this in a spatial way, at the desired level.
+Also, at each level we want to have the reverse hierarchical ordering available at that level, so the complete address at that level must be returned.
+We will use base 4 **fractions** as address (cf. Stevens & Olsen 2004) as this seems to be more convenient to calculate such an address at each level.
+
+We have two options to implement this:
+
+- do the processing in a dataframe context (group by a specific level, and using simple functions to go to base 4 and calculate the desired grouping level), and then go back to a raster.
+However, here we still want to be able not only to use the 32m² raster but also to work with a coarser raster (which is lighter to handle).
+- or we do raster calculations only. A brick could even be made that holds the respective levels, but this will still be at the 32 m² level, so quite a burden to calculate.
+But that would need to be done only once.
+
+An advantage in both cases is that the coupling between base 10 rank and base 4 addresses is maintained for each raster cell.
+
+So, which is more convenient / feasible?
+
+Update: git-history of this notebook has shown that calculation and storage of such a dataframe is not as efficient as raster calculation.
+Those experiments are omitted from the notebook, so we consider raster calculations only.
+
+#### Doing raster calculations only
+
+Tried things in a variety of ways, see above and before.
+Settling now for the approach that works best.
+
+```{r}
+sub10 <- GRTSmaster_habitats[1000:1030, 660:690, drop = FALSE]
+sub10 %>% spplot
+```
+
+Note what happens with the default datatype 'FLT4S':
+
+```{r}
+sub4 <-
+    sub10 %>% 
+    calc(dec2base4,
+        filename = file.path(tempdir(), "sub4.tif"),
+        overwrite = TRUE)
+```
+
+```{r}
+dataType(sub4)
+```
+
+
+```{r}
+stack(sub10, sub4) %>% 
+                    values %>% 
+                    as_tibble %>% 
+                    filter(!is.na(layer)) %>% 
+                    as.matrix %>% 
+                    head(10)
+```
+
+Whoopsie, look what happened to the digits!
+
+However when we set the datatype to 'FLT8S', this is solved:
+
+```{r}
+sub4 <-
+    sub10 %>% 
+    calc(dec2base4,
+        filename = file.path(tempdir(), "sub4.tif"),
+        datatype = "FLT8S",
+        overwrite = TRUE)
+```
+
+
+```{r}
+sub4 <- raster(file.path(tempdir(), "sub4.tif"))
+sub4 %>% spplot
+```
+
+```{r}
+sub4 %>% dataType()
+```
+
+```{r}
+sub4[!is.na(sub4)] %>% 
+    head(10)
+```
+
+```{r}
+stack(sub10, sub4) %>% 
+                    values %>% 
+                    as_tibble %>% 
+                    filter(!is.na(layer)) %>% 
+                    as.matrix %>% 
+                    head(10)
+```
+
+This looks perfect and promising!
+
+Let's try to do this for the whole dataset.
+
+```{r}
+system.time(
+GRTSmh_base4 <-
+    GRTSmaster_habitats %>% 
+    calc(dec2base4,
+        filename = "../data/20_processed/GRTSmh_base4.tif",
+        datatype = "FLT8S",
+        overwrite = TRUE)
+)
+```
+
+This took about 15 minutes and the resulting file is 131 MB large, which is rather acceptable, though large.
+So we may opt to generate derived layers (cf. evaluation grid) only using decimal ranking numbers, not with the base4 notation.
+
+The file's contents seem fine:
+
+```{r}
+GRTSmh_base4 <- raster("../data/20_processed/GRTSmh_base4.tif")
+GRTSmh_base4
+((GRTSmh_base4 %>% 
+    values) > 0) %>% 
+    sum(na.rm = TRUE)
+GRTSmh_base4[15e+6:(15e+6 + 20)]
+```
+
+
+### Climbing up the GRTS hierarchical level
+
+It feels useful to calculate coarser grids up to the 16 km level, cf.:
+
+```{r}
+res <- 32 * 2^(0:12) / 1000
+names(res) <- 0:12
+res
+```
+
+We will declare the names of the above vector (0:12) as the hierarchical levels of the grid.
+So we focus on levels 0 to 9.
+We want to save a rasterbrick (multilayered tif) with the decimal ranking numbers for those levels.
+Saving that as an intermediate dataset will make it easier to work further (dissolving, joining etc).
+
+Let's try this with the subset.
+
+Make an empty brick with the appropriate nlayers, extent, resolution and crs:
+
+```{r warning=FALSE}
+sub10brick <- 
+    brick(extent(sub4), 
+          nrows = 31, 
+          ncols = 31, 
+          nl = 10, 
+          crs = crs(sub4)
+          ) %>% 
+    writeRaster(filename = file.path(tempdir(), "sub10brick.tif"),
+                format = "GTiff", 
+                datatype = "INT4S",
+                overwrite = TRUE)
+names(sub10brick) <- str_c("level", 0:9)
+sub10brick
+```
+
+Define necessary functions (scalar resp. vectorized) to compute decimal ranks from truncated base-4 fractions:
+
+```{r warning=FALSE}
+base4frac2dec_s <- function(x, level) {
+            multipliers <- as.matrix(4 ^ ((13 - level - 1):0))
+            ifelse(is.na(x), NA, {
+                a <- x * 10 ^ level
+                a <- round(a - floor(a), 13 - level)
+                a <- a %>% 
+                    as.character %>% 
+                    str_sub(start = 3) %>% 
+                    str_pad(width = 13 - level,
+                            side = "right",
+                            pad = "0") %>% 
+                    str_split("", simplify = TRUE) %>% 
+                    as.numeric
+                t(a) %*% multipliers
+            }
+            )
+}
+base4frac2dec <- 
+    function(x, level) {
+        sapply(x, 
+               function(x) base4frac2dec_s(x, level = level))
+        }
+
+```
+
+Computation of the brick:
+
+```{r warning=FALSE}
+system.time({
+for (i in 0:9) {
+    sub10brick[[i + 1]] <-
+        sub4 %>% 
+        calc(function(x) base4frac2dec(x, level = i))
+    sub10brick %>%
+    writeRaster(filename = file.path(tempdir(), "sub10brick.tif"),
+                format = "GTiff",
+                datatype = "INT4S",
+                overwrite = TRUE)
+}
+})
+```
+
+<!-- ```{r warning=FALSE} -->
+<!-- i <- 3 -->
+<!-- system.time({ -->
+<!-- layer3 <- -->
+<!--         sub4 %>%  -->
+<!--         calc(function(x) base4frac2dec(x, level = i), -->
+<!--              filename = file.path(tempdir(), "layer3.tif"), -->
+<!--                 format = "GTiff", -->
+<!--                 datatype = "INT4S", -->
+<!--                 overwrite = TRUE) -->
+<!-- }) -->
+<!-- ``` -->
+
+
+Parallel computation of the brick with `foreach()` may reduce the needed time for calculation, BUT gave different results (inspection of minima and maxima per layer); this may perhaps have to do with a badly exported environment in the foreach function:
+
+```{r warning=FALSE, eval=FALSE}
+library(doParallel)
+cl <- makeCluster(detectCores())
+registerDoParallel(cl)
+system.time({
+foreach(i = 0:9,
+        .export = c("%>%",
+                    "calc",
+                    "str_sub",
+                    "str_pad",
+                    "str_split",
+                    "writeRaster")) %dopar% {
+    sub10brick[[i + 1]] <-
+        sub4 %>% 
+        calc(function(x) base4frac2dec(x, level = i))
+    sub10brick %>%
+    writeRaster(filename = file.path(tempdir(), "sub10brick.tif"),
+                format = "GTiff",
+                datatype = "INT4S",
+                overwrite = TRUE)
+}
+})
+# foreach(i = 0:9,
+#         .packages = c("raster",
+#                       "tidyverse",
+#                       "stringr")) %dopar% {
+#     sub10brick[[i + 1]] <-
+#         sub4 %>% 
+#         calc(function(x) base4frac2dec(x, level = i))
+#     sub10brick %>%
+#     writeRaster(filename = file.path(tempdir(), "sub10brick.tif"),
+#                 format = "GTiff",
+#                 datatype = "INT4S",
+#                 overwrite = TRUE)
+# }
+# })
+stopCluster(cl)
+```
+
+Parallel computation of the brick with `clusterR()` ([source](https://stackoverflow.com/questions/44266752/replace-specific-value-in-each-band-of-raster-brick-in-r)) does not work well:
+
+```{r warning=FALSE, eval=FALSE}
+beginCluster()
+base4frac2dec <- 
+    function(x) {
+        sapply(x, 
+               function(x) base4frac2dec_s(x, level = i))
+    }
+calcfun <- function(x) calc(x, fun = base4frac2dec)
+y <- clusterR(sub4, calc, args = list(fun = base4frac2dec))
+
+# nr_nodes <- 3 #number of cores to use for clusterR function (max recommended: ncores - 1)
+# calcfun <- function(x) base4frac2dec(x, level = i)
+  #initialize cluster
+  beginCluster()
+cl <- getCluster()  
+library(parallel)
+for (i in 0:9) {
+
+  # cat(paste("Currently processing layer:", i + 1,"/",nlayers(sub10brick), "\n"))
+
+  
+
+  # compute
+  sub10brick[[i + 1]] <- clusterR(sub4,
+                                calc,
+                                args = list(fun = base4frac2dec))
+    # clusterExport(cl, "i")
+    
+    # sub10brick[[i + 1]] <- 
+    #     sub4 %>% 
+    #     calc(function(x){ parSapply(cl, x, base4frac2dec)})
+    
+}
+  #end cluster
+  endCluster()
+```
+
+
+Level renaming and control:
+
+```{r warning=FALSE}
+names(sub10brick) <- str_c("level", 0:9)
+sub10brick
+```
+
+Do the same starting from the file:
+
+```{r}
+sub10brick <- 
+    brick(file.path(tempdir(), "sub10brick.tif"))
+names(sub10brick) <- str_c("level", 0:9)
+sub10brick
+dataType(sub10brick)
+```
+
+Having a look at the maps:
+
+```{r}
+lapply(as.list(sub10brick), spplot)
+```
+
+Great!
+
+## Exploring the created GRTSmh_brick data source
+
+I.e. the datasource generated by code in the `src/generate_GRTS_20_GRTSmh_brick` subfolder.
+
+```{r}
+GRTSmh_brick <- 
+    brick("../data/20_processed/GRTSmh_brick/GRTSmh_brick.tif")
+GRTSmh_brick
+```
+
+```{r}
+read_GRTSmh_base4frac("../data")
+```
+
+```{r}
+GRTSmh_brick %>% summary
+```
+
+
+
+
+```{r}
+read_GRTSmh_base4frac("../data") %>% 
+     values %>% 
+    max(na.rm = TRUE)
+```
+
+
+```{r}
+GRTSmh_brick[[3]] %>% 
+     values %>% 
+    min(na.rm = TRUE)
+```
+
+```{r}
+GRTSmh_brick[[10]] %>% 
+     values %>% 
+    max(na.rm = TRUE)
+```
+
+Remind that the cell with the maximum base 4 fraction at level 0 is _not_ necessarily located in the cell with the maximum base 4 fraction at a _higher_ level.
+
+Here, this is the case for level 9 (i.e. the 10th value in below vector):
+
+```{r}
+sapply(0:9, function(i) base4frac_to_dec(0.3333333333321, level = i))
+```
+
+```{r warning=FALSE}
+subbrick <- GRTSmh_brick[1000:1200, 600:800, drop = FALSE]
+```
+
+
+```{r}
+lapply(as.list(subbrick[[1:10]]), spplot)
+```
+
+```{r}
+lapply(as.list(GRTSmh_brick[[7:10]]), spplot)
+```
 
 
 

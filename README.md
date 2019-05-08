@@ -77,8 +77,21 @@ This is the structure of the repo:
 
 ### Installing, testing and using the _n2khabutils_ package
 
+To install, run:
 
-< to do ! >
+```r
+remotes::install_github("inbo/n2khab-inputs", 
+                        subdir = "n2khabutils",
+                        ref = "package_update", # omit after merge to master
+                        build_opts = c("--no-resave-data", "--no-manual"))
+```
+
+Have a look at the vignettes to quickly find your way!
+
+```r
+help(package = "n2khabutils")
+# vignettes only: browseVignettes("n2khabutils")
+```
 
 
 ### Managing data
