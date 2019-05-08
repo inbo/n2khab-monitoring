@@ -347,5 +347,108 @@ read_vc(schemes_path) %>%
 
 ## Appending records for the monitoring programme for biotic habitat quality (MHQ)
 
+Writing `schemes`.
 
+```{r message=FALSE}
+
+schemes_MHQ <- gs_key("1Lltpq1_OQENZKrCmfDLuBiaZQ0_YCoGkFAqcOtFRdHg") %>%
+  gs_read(ws = 1) %>%
+  mutate(attribute_1 = ifelse(attribute_1 == 91, 
+                              "91E0", 
+                              as.character(attribute_1)),
+         scheme = as.factor(scheme),
+         programme = as.factor(programme),
+         attribute_1 = as.factor(attribute_1),
+         tag_1 = as.factor(tag_1)) 
+
+schemes <- read_vc(schemes_path)
+
+schemes %>%
+  bind_rows(schemes_MHQ) %>%
+  mutate(scheme = factor(scheme,
+                            levels = c(
+                              levels(schemes$scheme),
+                              levels(schemes_MHQ$scheme)
+                              )
+                            ),
+         programme = factor(programme,
+                            levels = c(
+                              levels(schemes$programme),
+                              levels(schemes_MHQ$programme)
+                              )
+                            ),
+         attribute_1 = factor(attribute_1,
+                            levels = c(
+                              levels(schemes$attribute_1),
+                              levels(schemes_MHQ$attribute_1)
+                              )
+                            ),
+         tag_1 = factor(tag_1,
+                           levels = c(
+                              levels(schemes$tag_1),
+                              levels(schemes_MHQ$tag_1)
+                              )
+                           )
+         ) %>%
+  arrange(programme, scheme) %>% 
+    write_vc(schemes_path,
+         sorting = c("programme", 
+                     "scheme"),
+         optimize = TRUE,
+         strict = FALSE)
+
+```
+
+Writing `schemesTypes`.
+
+```{r}
+schemes_type <- read_vc(scheme_types_path)
+
+scheme_type_MHQ <- gs_key("1Lltpq1_OQENZKrCmfDLuBiaZQ0_YCoGkFAqcOtFRdHg") %>%
+  gs_read(ws = 2) %>%
+  mutate(scheme = factor(scheme))
+  
+schemes_type %>%
+  bind_rows(scheme_type_MHQ) %>%
+  mutate(scheme = factor(scheme,
+                            levels = c(
+                              levels(schemes_type$scheme),
+                              levels(scheme_type_MHQ$scheme)
+                              )),
+         type = factor(type,
+                       levels = levels(schemes_type$type))
+  ) %>% 
+  arrange(scheme, type) %>% 
+  write_vc(scheme_types_path,
+           sorting = c("scheme",
+                     "type"),
+           optimize = TRUE,
+           strict = FALSE)
+                         
+
+```
+
+Appending MHQ names for `scheme`.
+
+```{r message=FALSE}
+
+namelist <- read_vc(namelist_path)
+
+schemes_MHQ_names <- schemes_MHQ %>%
+  left_join(namelist, by = c("attribute_1" = "code")) %>%
+  mutate(name = paste(ifelse(lang == "en",
+                             "Habitat quality scheme:",
+                             "Meetnet habitatkwaliteit:"),
+                      shortname),
+         shortname = paste(ifelse(lang == "en",
+                             "Habitat quality scheme",
+                             "Meetnet habitatkwaliteit"),
+                      attribute_1)) %>%
+  select(code = scheme, lang, name, shortname)
+
+namelist %>%
+  bind_rows(schemes_MHQ_names) %>%
+  write_vc(namelist_path) 
+
+```
 
