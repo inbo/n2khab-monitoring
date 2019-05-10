@@ -65,7 +65,7 @@ This is the structure of the repo:
     ├── man
     ├── R                   <- Package functions are to be made here.
     ├── DESCRIPTION
-    ├── n2khabutils.Rproj   <- RStudio project file for convenient package management
+    ├── n2khabutils.Rproj   <- RStudio project file for package contributing & management
     ├── NAMESPACE
     ├── LICENSE
 ├── datamanagement.md       <- How data are organized and stored
@@ -103,6 +103,9 @@ See the separate [document](datamanagement.md) on data management.
 
 See the separate [document](functionality.md) on intended functionality.
 
+Use the `n2khabutils.Rproj` RStudio project for package contributions and management.
+You will want to open the file `src/manage_package.R` in this project to get some useful packaging commands and developing tips.
+
 
 ### Coding tools: it's never too late for learning!
 
@@ -114,8 +117,12 @@ Organise data in R in a [tidy](https://r4ds.had.co.nz/tidy-data.html#tidy-data-1
 Recommended resources to get started are:
     - [R for Data Science](https://r4ds.had.co.nz/)
     - [Geocomputation with R](https://geocompr.robinlovelace.net)
+    - interesting resources when contributing to the package:
+        - [R packages](http://r-pkgs.had.co.nz/) (by Hadley Wickham 2015; an extended/updated [version](https://r-pkgs.org/) is still under development)
+        - `vignette("formatting", package = "roxygen2")` for documentation syntax
 - have a quick look at the [tidyverse style guide](https://style.tidyverse.org/).
 There you see how to style object, variable and function names, as well as the documentation.
+At least keep in mind: **use lower case and 'snake_case'** for object, variable and function names.
 - preferrably use `git2rdata::write_vc()` when an R _dataframe_ needs to be written to disk for later use (see <https://inbo.github.io/git2rdata/>).
 Define the sorting order well (avoid ties) by using the `sorting` argument, in order to get meaningful _diffs_ when data are updated later.
 The function stores the object in a version-control + R friendly format (tab separated values (.tsv) plus metadata on sorting order and variables (.yml)).
