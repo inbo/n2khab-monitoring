@@ -25,11 +25,6 @@ library(n2khabutils)
 library(rasterVis)
 ```
 
-This is a html notebook which you can use to add your own miscellaneous code,
-e.g. to explore some datasets before writing a function to read it,
-to prepare for writing functions, 
-to test existing n2khabutils functions, etc.
-
 # Exploring the GRTS master grid
 
 ## Correcting a flaw in the original version
