@@ -23,6 +23,7 @@ library(stringr)
 library(n2khabutils)
 # library(plotly)
 library(rasterVis)
+library(stars)
 ```
 
 # Exploring the GRTS master grid
@@ -836,6 +837,79 @@ lapply(as.list(GRTSmh_brick[[7:10]]), spplot)
 ```
 
 
+## Make aggregated rasters from a brick
+
+```{r}
+GRTSmh_brick <- read_GRTSmh("../data", brick = TRUE)
+```
+
+
+```{r warning=FALSE}
+subbrick <- GRTSmh_brick[1000:1200, 600:800, drop = FALSE]
+```
+
+After doing some searches, it seems we will have to go via polygonization and rasterization.
+
+### Polygonization step
+
+A method from raster, however this is not efficient:
+
+```{r}
+system.time({
+sp_layer <- 
+    subbrick$layer.6 %>%
+    rasterToPolygons(dissolve = TRUE)
+})
+sp_layer %>% 
+    spplot
+```
+
+A method from stars, [said](https://github.com/hypertidy/quadmesh#fast-polygonization-of-individual-cells) to be very efficient (cf. the warning in the docs of `spex::polygonize`):
+
+```{r}
+system.time({
+pol <- 
+    subbrick$layer.6 %>% 
+    st_as_stars %>% 
+    st_as_sf(as_points = FALSE, merge = TRUE)
+})
+plot(pol)
+```
+
+Wow, this is almost 300 times faster!
+
+```{r}
+pol
+```
+
+Do occurring values coincide with those in the subbrick?
+
+```{r}
+pol %>% 
+    st_drop_geometry %>% 
+    distinct(layer.6) %>% 
+    arrange(layer.6) %>% 
+    pull(layer.6) %>% 
+    all.equal(subbrick$layer.6 %>% 
+                  values %>% 
+                  unique %>% 
+                  sort)
+```
+
+
+### Rasterization step
+
+We compare `raster::raster()`, `fasterize::fasterize()` and `stars::st_rasterize()`.
+
+Further option: `stars::aggregate()`. Maybe first have a look at this; could this prevent the need from going back & forth via polygons?
+
+At least it is clear that `raster::rasterize()` is not efficient.
+
+But first, we need to create a raster template.
+
+```{r}
+
+```
 
 
 
