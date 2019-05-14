@@ -11,6 +11,7 @@ hashes.csv
 *.tar.gz
 .httr-oauth
 src/**/*.md
+!src/miscellaneous/README.md
 _book*
 inst/doc
 
