@@ -112,7 +112,7 @@ en_codelist <-
     read_vc(namelist_path) %>% 
     filter(lang == "en") %>% 
     select(code, name)
-source_df %>% 
+source_df %>%
     select(type = Code.geïntegreerd,
            main_type = Code,
            typeclass_en = Groepering.niveau.1.Eng,
@@ -136,6 +136,9 @@ source_df %>%
            tag_2 = NA %>% as.character,
            tag_3 = NA %>% as.character
            ) %>% 
+    arrange(typeclass, 
+            type) %>% 
+    mutate(type = factor(type, levels = .$type)) %>% 
     write_vc(types_path,
              sorting = c("typeclass",
                          "type"),
