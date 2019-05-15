@@ -1,16 +1,32 @@
-#' @title Create the data folder structure and return the path to the data folder
+#' @title Create a standard data folder structure and return the path to the \code{data} folder
 #'
-#' @description This function will check for the existence of data folders, create them if necessary, and return the path to the data folder
+#' @description This function will check for the existence of default data folders,
+#' create them if necessary, and return the path to the data folder.
 #'
-#' @param root Character string indicating whether the root folder of the current git repository or the root folder of the current Rstudio project should be used as the folder where you want the data folder structure to be created. Can be "rproj" (the default) for an Rstudio R project or "git" for a git repository.
+#' @details In n2khab projects a standardized folder setup is used for binary
+#' data, as explained in the \href{doc/vign-020_datastorage.html}{vignette} on
+#' data storage.
+#' The functions creates the folders \code{data}, \code{data/10_raw}
+#' and \code{data/20_processed}, or prints a message if these already
+#' exist.
+#' You can use the value returned by the function as the `path` argument of
+#' functions that read particular data.
+#'
+#' @param root Character string indicating whether the root folder of the current git repository or the root folder of the current Rstudio project should be used as the folder where you want the data folder structure to be created.
+#' Can be \code{"rproj"} (the default) for an RStudio R project or \code{"git"}
+#' for a git repository.
+#'
 #' @param path An optional argument to specify a custom path to a folder where you want the data folder structure to be created. Default is \code{NA} (no custom path).
 #'
-#' @return A new data folder beneath specified root or path with subfolders \code{10_raw} and \code{20_processed} and a character string that gives the absolute path to the \code{data/} folder
+#' @return A character string that gives the absolute path to the \code{data/}
+#' folder.
 #'
 #' @importFrom rprojroot
 #' find_root
 #' is_git_root
 #' is_rstudio_project
+#'
+#' @export
 #'
 #' @examples
 #'filemanag_folders()
@@ -75,14 +91,14 @@ filemanag_folders <- function(root = c("rproj", "git"), path = NA) {
 #' @return downloaded and unzipped file in the folder
 #'
 #'
-#' @examples
+#' @keywords internal
 #'
 filemanag_zenodo <- function(path, doi) {
-    if (is.missing(path)) {
+    if (missing(path)) {
 
     }
 
-    if (is.missing(doi)) {
+    if (missing(doi)) {
 
     }
 
@@ -101,8 +117,7 @@ filemanag_zenodo <- function(path, doi) {
 #'
 #' @return downloaded files in the specified folder
 #'
-#'
-#' @examples
+#' @keywords internal
 #'
 filemanag_processed <- function(path, filename) {
 
