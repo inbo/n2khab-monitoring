@@ -415,6 +415,7 @@ _**Needed functions: in package n2khabutils:**_
         - returns spatial object and long (tidy) tibble
     - `read_habitatdune(path, file)`
     - `read_habitatstreams(path, file)`
+    - `read_sac(path, file)`
     - `read_mhq_terrestrial_locs(path, file)`
     - `read_mhq_lentic_locs(path, file)`
     - `read_mhq_lotic_locs(path, file)`
@@ -443,7 +444,6 @@ _**Needed functions: in inborutils package:**_
     - `read_watersurfaces(path, file)`
     - `read_flanders(path, file)`
     - `read_provinces(path, file)`
-    - `read_sac(path, file)`
     - `read_biogeoregions(path, file)`
     - `read_ecoregions(path, file)`
     - `read_soilmap(path, file)`
