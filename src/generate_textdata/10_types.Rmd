@@ -138,7 +138,10 @@ source_df %>%
            ) %>% 
     arrange(typeclass, 
             type) %>% 
-    mutate(type = factor(type, levels = .$type)) %>% 
+    mutate(type = factor(type, levels = .$type),
+           main_type = factor(main_type, 
+                              levels = .$main_type %>% unique)
+           ) %>% 
     write_vc(types_path,
              sorting = c("typeclass",
                          "type"),
