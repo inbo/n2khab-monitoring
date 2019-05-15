@@ -1,0 +1,198 @@
+---
+title: "Exploring Watina"
+date: '`r paste("Version",lubridate::now())`'
+output:
+  html_notebook:
+    number_sections: yes
+    code_folding: show
+    includes:
+      in_header: ../header.html
+    toc: yes
+    toc_float:
+      collapsed: no
+      smooth_scroll: no
+---
+
+```{r setup, message=FALSE, echo=FALSE}
+options(stringsAsFactors = FALSE)
+# library(sp)
+# library(sf)
+# library(raster)
+library(tidyverse)
+library(stringr)
+# library(n2khabutils)
+# library(plotly)
+# library(rasterVis)
+# library(stars)
+library(DBI)
+source("../private_code.R") # just loads connection string for Watina DB
+library(dbplyr)
+library(dbplot)
+```
+
+# Querying the Watina groundwater database and exploring tables
+
+The below explorations are based on code of Ivy Jansen, but use the `DBI` library instead of `RODBC` (`DBI` is standard in RStudio).
+
+
+```{r}
+con <- dbConnect(odbc::odbc(), .connection_string = connectionstring_watina)
+dbListTables(con) %>% View("tables")
+```
+
+## Locations and filters
+
+Listing relevant tables and showing first records:
+
+```{r}
+locations <-  tbl(con, "DimMeetpunt")
+locations %>% glimpse
+```
+
+Variables of interest: `MeetpuntWID`, `MeetpuntCode`, `MeetpuntStatusCode`, `MeetpuntTypeCode`, `MeetpuntXCoordinaat`, `MeetpuntYCoordinaat`.
+
+```{r}
+# dbplot library provides a few basic graph functions for which the 
+# calculations are executed inside the database, and a ggplot object is returned.
+locations %>% 
+    dbplot_raster(MeetpuntXCoordinaat, 
+                  MeetpuntYCoordinaat, resolution = 300) +
+    coord_fixed()
+```
+
+
+```{r}
+# does not work:
+dbGetQuery(con, 'SELECT TOP(6) * FROM DimMeetpunt')
+```
+
+
+```{r}
+# does not work:
+tbl(con, "DimPeilpunt") %>% 
+    head
+```
+
+```{r}
+dbListFields(con, "DimPeilpunt")
+```
+
+```{r}
+# DOES work:
+gwfilters <- 
+    dbGetQuery(con, "SELECT MeetpuntWID, PeilpuntCode, ReferentieNiveauMaaiveld, PeilbuisLengte, FilterLengte,
+                    PeilpuntOpenbaarheidTypeCode, PeilpuntOpenbaarheidTypeNaam, PeilpuntTypeNaam
+                 FROM DimPeilpunt")
+gwfilters %>% glimpse
+```
+
+The table `DimPeilpunt` will be needed to select the shallow groundwater filters (i.e. with filter base < 3 m below soil surface), and to select the shallowest filter from (remaining) filters duplets.
+
+Let's explore that a little more:
+
+```{r}
+gwfilters %>% 
+    mutate(filterbase = -(PeilbuisLengte - ReferentieNiveauMaaiveld)) %>% 
+    ggplot(aes(x = filterbase)) + 
+    geom_histogram(colour = "grey90") +
+    scale_y_log10() +
+    xlab("filterbase (m below soil surface)")
+```
+
+```{r}
+gwfilters %>% 
+    mutate(filterbase = -(PeilbuisLengte - ReferentieNiveauMaaiveld),
+           shallow = filterbase > -3) %>% 
+    filter(filterbase > -10) %>% 
+    ggplot(aes(x = filterbase, fill = shallow)) +
+    geom_histogram(binwidth = 0.5, colour = "grey90") + 
+    # scale_y_log10() +
+    xlab("filterbase (m below soil surface)")
+```
+
+```{r}
+gwfilters %>% 
+    mutate(filterbase = -(PeilbuisLengte - ReferentieNiveauMaaiveld)) %>% 
+    filter(filterbase == -3) %>% 
+    nrow
+```
+
+Just including the filterdepths of exactly 3 meters deep would however add 433  filters, so let's include that one as well (it probably has to do with rounding effects):
+
+```{r}
+gwfilters %>% 
+    mutate(filterbase = -(PeilbuisLengte - ReferentieNiveauMaaiveld),
+           shallow = filterbase >= -3) %>% 
+    filter(filterbase > -10) %>% 
+    ggplot(aes(x = filterbase, fill = shallow)) +
+    geom_histogram(binwidth = 0.5, colour = "grey90") + 
+    # scale_y_log10() +
+    xlab("filterbase (m below soil surface)")
+```
+
+## Groundwater levels: XG3
+
+```{r}
+# "SELECT * FROM ssrs_Precalc"
+# the following works:
+XG3 <- tbl(con, "ssrs_Precalc")
+XG3 %>% glimpse()
+```
+
+Variables of interest for MNE: `HydroJaar`, `MeetpuntWID`, `GHG_2`, `GLG_2`, `GVG_2`, `MetingTypeWID`.
+Optionally (with a switch?) the `_1` versions of the XG3 variables.
+`_1`-variables are the absolute groundwater levels, `_2`-variables are the groundwater levels relative to soil surface.
+
+Nr of rows in this table:
+
+```{r}
+XG3 %>% collect %>% nrow
+```
+
+Positive values will need to be set to zero:
+
+```{r}
+XG3 %>% 
+    filter(GHG_2 > -2,
+           GHG_2 < 1.5) %>% 
+    dbplot_histogram(GHG_2)
+```
+
+
+```{r}
+tbl(con, "DimMetingType")
+```
+
+Will this table be of use?
+May be.
+We could replace `MetingTypeWID` in the previous table by a factor `measurement_type`, using the codes from `MetingTypeWID` and translating these (within a function that has a `lang` argument) to a label variable with either Dutch or English (or ...) names by storing those in the `namelist` data source of the R package.
+
+
+## Chemical data
+
+```{r}
+# "SELECT * FROM DimChemVar"
+# the following works:
+chemvars <- tbl(con, "DimChemVar")
+chemvars %>% glimpse()
+```
+
+This table provides the chemical variable definitions.
+
+```{r}
+# "SELECT * FROM FactChemischeMeting"
+# the following works:
+chem_measurements <- tbl(con, "FactChemischeMeting")
+chem_measurements %>% glimpse
+```
+
+This table provides the chemical measurements.
+Essential variables are: `MeetpuntWID`, `DatumWID`, `ChemVarWID`, `Meetwaarde`, `MeetwaardeMEQ`, `IsBelowLOQ`, `MetingStatusCode`, `MetingStatus`.
+
+Missing here: electroneutrality (but see Cécile's [remark](https://docs.google.com/a/inbo.be/document/d/1isa_9HYQcxo8OYi0fKYmLY42GGTNxpev6RgW05WNxE4/edit?disco=AAAACuSS6FU)).
+
+```{r}
+dbDisconnect(con)
+```
+
+
