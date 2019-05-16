@@ -88,8 +88,8 @@ schemes_schemetypes <-
         type = as.character(type) %>% 
                 factor(levels = 
                            read_vc(types_path) %>% 
-                           .$type) %>% 
-                droplevels
+                           .$type %>% 
+                           levels)
     ) %>% 
     arrange(programme, scheme)
 ```
