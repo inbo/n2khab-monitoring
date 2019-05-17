@@ -394,7 +394,7 @@ To recall, `read_xxx()` functions typically return:
     Therefore, place the latter (only) in the [inborutils](https://github.com/inbo/inborutils) package.
 - data with English variable names and labels of identifiers (such as types, pressures, ...)
 - [tibbles](https://r4ds.had.co.nz/tibbles.html) instead of dataframes
-- omit unneeded variables for n2khab projects
+- only the variables needed for n2khab projects
 
 So, depending on the data source, it may require more than a `read_vc()` or `st_read()` statement.
 
