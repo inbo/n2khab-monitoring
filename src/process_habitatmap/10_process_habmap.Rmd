@@ -1,0 +1,180 @@
+# Process habitatmap
+
+## Data source
+The shapefile of the BWK and Natura 2000 habitat map of Flanders can be downloaded here[http://www.geopunt.be/download?container=bwk2%5C2018&title=Biologische%20waarderingskaart%20-%20Natura%202000%20Habitatkaart].
+
+```{r read_raw_data}
+
+habmap_sf <- st_read("../../data/10_raw/habitatmap", "habitatmap")
+
+```
+
+## Correction of some of the codes in the Habitat map
+
+For some polygons in the habitat map the vegetation type is not certain. When 
+this is the case, the code contains the possible vegetation types separated with
+a ','. However, in some cases this way of coding is not used. In that case we
+change the code according to the general coding rules (for example 3130_rbbmr is
+changed to 3130,rbbmr). This makes processing of the habitat map more 
+straightforward. Table \@ref(tab:code_corrected) shows the corrected codes.
+
+```{r, eval = FALSE}
+habmap_correction <-  gs_key("1Lltpq1_OQENZKrCmfDLuBiaZQ0_YCoGkFAqcOtFRdHg") %>%
+  gs_read(ws = 3)
+
+write_vc(habmap_correction,  "../../n2khabutils/inst/textdata/habmap_correction")
+
+```
+
+```{r code_corrected}
+
+habmap_correction <- read_vc("../../n2khabutils/inst/textdata/habmap_correction")
+
+habmap_correction %>%
+  kable(caption = "Corrected codes in habitat map") %>%
+  kable_styling()
+
+```
+
+## Processing of the attribute table
+
+Every polygon in the habitat map can consist of maximum 5 different vegetation types. This information is stored in the columns 'HAB1', 'HAB2',..., 'HAB5' of the attribute table. The fraction of each vegetation type within the polygons is stored in the columns 'PHAB1', 'PHAB2', ..., 'PHAB5'. We will call these different fractions 'patches'. 
+
+We will convert the attribute table to a long format, so that every row contains one patch. A new variable is created to store the patch number (1 to 5): 'patch_id'.
+
+For some patches the vegetation type is uncertain, and 2 or 3 possible vegetation types are provided, separated with a ','. We will split the different possible vegetation types and create one row for each of them. An additional variable 'uncertain' will be TRUE if a patch consists of 2 or 3 possible vegetation types, and FALSE if only one vegetation type is provided.
+
+
+```{r select_polygons}
+
+habmap_sf <- habmap_sf %>%
+            filter(!(HAB1 == "gh" & PHAB1 == 100)) %>%
+            mutate(polygon_id = TAG, # unieke id
+                   polygon_description = str_c(PHAB1, "% ", HAB1,
+                                      ifelse(is.na(HAB2), "", str_c("; ", PHAB2, "% ", HAB2)),
+                                      ifelse(is.na(HAB3), "", str_c("; ", PHAB3, "% ", HAB3)),
+                                      ifelse(is.na(HAB4), "", str_c("; ", PHAB4, "% ", HAB4)),
+                                      ifelse(is.na(HAB5), "", str_c("; ", PHAB5, "% ", HAB5)))) 
+
+```
+
+
+```{r long_format}
+
+habmap_longPHAB <- habmap_sf %>%
+    st_drop_geometry() %>%
+    gather(PHAB1, PHAB2, PHAB3, PHAB4, PHAB5, key = "phabn", value = "phab") %>%
+    mutate(patch_id = str_sub(phabn, 5, 5)) %>%
+    select(polygon_id, patch_id, phab) %>%
+    filter(!is.na(phab))
+
+habmap_longHAB <- habmap_sf %>%
+    st_drop_geometry() %>%
+    select(polygon_id, polygon_area = OPPERVL, starts_with("HAB"), -HABLEGENDE) %>%
+    gather(HAB1, HAB2, HAB3, HAB4, HAB5, key = "hab", value = "code") %>%
+    mutate(patch_id = substr(hab, 4, 4)) %>%
+    filter(!is.na(code)) %>%
+    filter(! code %in% c("gh", "x"))
+
+if(sum(habmap_correction$code %in% habmap_longHAB$code) > 0){
+
+    habmap_longHAB <- habmap_longHAB %>%
+        left_join(habmap_correction, by = "code") %>%
+        mutate(code_orig = code,
+            code = ifelse(is.na(code_corrected),
+                             code,
+                             code_corrected)) %>%
+        select(-code_corrected)
+    
+    } else {
+      
+      habmap_longHAB <- habmap_longHAB %>%
+        mutate(code_orig = code)
+}
+
+habmap_long <- habmap_longHAB %>%
+    left_join(habmap_longPHAB, by = c("polygon_id", "patch_id")) %>%
+    mutate(uncertain = str_detect(code, ",")) %>%
+    separate(code,
+             into = c("type1", "type2", "type3"),
+             sep = ",",
+             remove = FALSE) %>%
+    gather(type1, type2, type3, key = "ntype", value = "type") %>%
+    filter(!is.na(type)) %>%
+    filter(!(type %in% c("gh", "bos")))
+
+# habmap_long <- habmap_long %>%
+#     rename(type = type) %>%
+#     mutate(classtype = ifelse( str_sub(vegtype, 1,3) == "rbb",
+#                              "rbb",
+#                              "hab"),
+#            habtype = ifelse(classtype == "hab",
+#                             str_sub(vegtype, 1, 4),
+#                             NA),
+#            habsubtype = ifelse(classtype == "hab" &
+#                                    str_sub(vegtype, 5, 5) == "_",
+#                             vegtype,
+#                             NA),
+#            patch_area = polygon_area * phab / 100) %>%
+#     select(polygon_id,  patch_id, phab, code_orig,
+#            uncertain, vegtype, classtype, habtype, habsubtype,
+#            polygon_area, patch_area) %>%
+#     arrange(polygon_id, patch_id)
+
+```
+
+## Select patches with types that belong to the standard list of habitat and rbb types  
+
+Table \@ref(tab:select_types) shows the patches with habitat types that do not belong to the standar list of habitat and rbb types. These records are filtered out. 
+
+```{r select_types}
+
+types <- read_types() %>%
+  select(type, typelevel, main_type, typeclass)
+
+habmap_long <- habmap_long %>%
+  left_join(types, by = "type")
+
+habmap_types <- habmap_long %>%
+  filter(!is.na(typelevel)) %>%
+   select(polygon_id, patch_id, code_orig = code, phab, uncertain, type, typelevel, main_type, typeclass) %>%
+  mutate(type = factor(type,
+                       levels = levels(types$type)
+                       )
+         ) %>%
+  arrange(polygon_id, patch_id)
+  
+habmap_other_type <- habmap_long %>%
+  filter(is.na(typelevel))
+
+habmap_other_type %>%
+  select(polygon_id, patch_id, code, phab, uncertain, type) %>%
+  kable() %>%
+  kable_styling()
+
+```
+
+## Select features that contain habitat or rbb types
+
+```{r}
+
+habmap_types_sf <- habmap_sf %>%
+  select(polygon_id, polygon_description) %>%
+  filter(polygon_id %in% habmap_types$polygon_id)
+
+```
+
+## Write results into a geopackage
+
+```{r}
+
+st_write(habmap_types_sf, "../../data/20_processed/habitatmap/habitatmap_processed.gpkg", layer = "habitatmap_polygons", driver = "GPKG")
+
+con = dbConnect(SQLite(),
+                dbname = "../../data/20_processed/habitatmap/habitatmap_processed.gpkg")
+
+dbWriteTable(con, "habitatmap_patches", habmap_types)
+
+dbDisconnect(con)
+
+```
