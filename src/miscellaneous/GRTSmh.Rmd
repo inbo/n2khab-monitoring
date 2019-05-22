@@ -26,6 +26,11 @@ library(rasterVis)
 library(stars)
 library(units)
 library(tmap)
+library(knitr)
+opts_chunk$set(
+  echo = TRUE,
+  dpi = 300
+)
 ```
 
 # Correcting a flaw in the original version
