@@ -92,12 +92,12 @@ filemanag_folders <- function(root = c("rproj", "git"), path = NA) {
 #'
 #' @return Downloaded file(s) in the specified folder.
 #'
-#' @importFrom stringr fixed str_remove
+#' @importFrom stringr fixed str_remove str_split
 #' @importFrom curl curl_fetch_memory curl_download
 #' @importFrom jsonlite fromJSON
 #'
 #'
-#' @keywords internal
+#' @export
 #'
 #' @examples
 #' # Single zip file deposition
@@ -112,7 +112,7 @@ filemanag_zenodo <- function(path, doi) {
     }
     if (missing(doi)) {
         stop(paste0("Please provide a doi for a Zenodo archive. This is a ",
-                   "string starting with 10.5281/zenodo. followed by a ",
+                   "string starting with '10.5281/zenodo.' followed by a ",
                    "unique number."))
     }
 
@@ -135,7 +135,7 @@ filemanag_zenodo <- function(path, doi) {
 
     # donwload each of the files
     for (url in file_urls) {
-        file_name <- tail(stringr::str_split(url, "/")[[1]], 1)
+        file_name <- tail(str_split(url, "/")[[1]], 1)
         destfile <- file.path(path, file_name)
         curl_download(url = url,
                       destfile = destfile,
