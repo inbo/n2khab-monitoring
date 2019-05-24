@@ -26,6 +26,11 @@ library(rasterVis)
 library(stars)
 library(units)
 library(tmap)
+library(knitr)
+opts_chunk$set(
+  echo = TRUE,
+  dpi = 300
+)
 ```
 
 # Correcting a flaw in the original version
@@ -1081,6 +1086,7 @@ for (i in 2:8) {
                resolution = res,
                crs = crs(subbrick)) %>% 
         extend(c(1, 1))
+    colnames(pol)[1] <- "value"
     pol %>% 
         st_buffer(dist = -0.1) %>% # this is done in order to prevent ALL_TOUCHED=TRUE 
                                    # from copying the border value of the neighbouring cell
@@ -1097,7 +1103,8 @@ for (i in 2:8) {
                     format = "GTiff",
                     datatype = "INT4S",
                     overwrite = TRUE)
-    colnames(pol)[1] <- "value"
+    # also storing the pol objects in separate gpkg files (but they could be
+    # combined into one, see further):
     pol %>%
         st_write(file.path(tempdir(), 
                                          str_c("pol_level", 
@@ -1131,6 +1138,113 @@ for (i in 1:7) {
 ```
 
 This workflow does not work for levels 8 and 9 because the subset of the raster is too small here.
+
+
+
+### Some geopackage experiments
+
+Experimenting with geopackage format (on a layer of `GRTSmh_brick`) to see whether we can put all rasters into one geopackage:
+
+```{r}
+r <- GRTSmh_brick$level9
+writeRaster(r, filename = file.path(tempdir(), "GRTSmh_diffres.gpkg"),
+                    format = "GPKG",
+                    datatype = "FLT4S",
+                    overwrite = TRUE)
+```
+
+The "INT4S" datatype however gives an error, while the "INT2U" and "FLT4S" datatypes do work.
+But "INT2U" is useless for the first bands of the brick, so we use "FLT4S".
+
+```{r}
+dataType(r)
+```
+
+
+```{r}
+r2 <- raster(file.path(tempdir(), "GRTSmh_diffres.gpkg"))
+r2 %>% spplot
+```
+
+```{r}
+r2 %>% dataType()
+```
+
+```{r}
+r2
+```
+
+```{r}
+gdalUtils::gdalinfo(file.path(tempdir(), "GRTSmh_diffres.gpkg"))
+```
+
+
+Also `write_stars()` gets the GDAL error for a INT4S datatype.
+
+```{r}
+r %>% 
+    st_as_stars %>% 
+    write_stars(dsn = file.path(tempdir(), "GRTSmh_diffres.gpkg"),
+                driver = "GPKG",
+                type = "Int32")
+```
+
+Taking the default 'Float32', does work (FLT4S):
+
+```{r}
+r %>% 
+    st_as_stars %>% 
+    write_stars(dsn = file.path(tempdir(), "GRTSmh_diffres.gpkg"),
+                driver = "GPKG")
+```
+
+Now, let's add a different raster into the geopackage (currently `writeRaster()` does not support this):
+
+```{r}
+pol %>% 
+        st_buffer(dist = -0.1) %>% # this is done in order to prevent ALL_TOUCHED=TRUE 
+                                   # from copying the border value of the neighbouring cell
+        st_rasterize(rtempl %>% 
+                         st_as_stars, 
+                     options = "ALL_TOUCHED=TRUE") %>% # in order to not only let cell 
+                                                       # centroids determine the value
+        write_stars(dsn = file.path(tempdir(), "GRTSmh_diffres.gpkg"),
+                driver = "GPKG",
+                options = c("RASTER_TABLE=lowres",
+                            "APPEND_SUBDATASET=YES"))
+```
+
+This works perfectly:
+
+```{r}
+gdalUtils::gdalinfo(file.path(tempdir(), "GRTSmh_diffres.gpkg"))
+```
+
+```{r}
+read_stars(file.path(tempdir(), "GRTSmh_diffres.gpkg"), sub = "GRTSmh_diffres")
+```
+
+```{r}
+read_stars(file.path(tempdir(), "GRTSmh_diffres.gpkg"), sub = "GRTSmh_diffres") %>% 
+    as("Raster") %>% 
+    spplot
+```
+
+```{r}
+read_stars(file.path(tempdir(), "GRTSmh_diffres.gpkg"), sub = "lowres")
+```
+
+
+Hey, that geopackage is just about 3.8 MB!
+What's the size of the geotiff? 5.6 MB, so the gpkg is more efficient with respect to file size.
+
+```{r}
+r %>% 
+    writeRaster(filename = file.path(tempdir(), "test"),
+                    format = "GTiff",
+                    datatype = "INT4S",
+                    overwrite = TRUE)
+```
 
 
 
