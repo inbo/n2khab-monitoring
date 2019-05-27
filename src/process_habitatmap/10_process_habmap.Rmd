@@ -19,10 +19,12 @@ changed to 3130,rbbmr). This makes processing of the habitat map more
 straightforward. Table \@ref(tab:code_corrected) shows the corrected codes.
 
 ```{r, eval = FALSE}
+
 habmap_correction <-  gs_key("1Lltpq1_OQENZKrCmfDLuBiaZQ0_YCoGkFAqcOtFRdHg") %>%
   gs_read(ws = 3)
 
-write_vc(habmap_correction,  "../../n2khabutils/inst/textdata/habmap_correction")
+write_vc(habmap_correction,  "src/process_habitatmap/data/habmap_correction",
+         sorting = "code")
 
 ```
 
