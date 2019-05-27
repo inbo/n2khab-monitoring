@@ -1,4 +1,4 @@
-# Process habitatmap
+# Generate standardized habitatmap
 
 ## Data source
 The shapefile of the BWK and Natura 2000 habitat map of Flanders can be downloaded here[http://www.geopunt.be/download?container=bwk2%5C2018&title=Biologische%20waarderingskaart%20-%20Natura%202000%20Habitatkaart].
@@ -52,7 +52,7 @@ For some patches the vegetation type is uncertain, and 2 or 3 possible vegetatio
 habmap_sf <- habmap_sf %>%
             filter(!(HAB1 == "gh" & PHAB1 == 100)) %>%
             mutate(polygon_id = TAG, # unieke id
-                   polygon_description = str_c(PHAB1, "% ", HAB1,
+                   description_orig = str_c(PHAB1, "% ", HAB1,
                                       ifelse(is.na(HAB2), "", str_c("; ", PHAB2, "% ", HAB2)),
                                       ifelse(is.na(HAB3), "", str_c("; ", PHAB3, "% ", HAB3)),
                                       ifelse(is.na(HAB4), "", str_c("; ", PHAB4, "% ", HAB4)),
@@ -139,7 +139,7 @@ habmap_long <- habmap_long %>%
 
 habmap_types <- habmap_long %>%
   filter(!is.na(typelevel)) %>%
-   select(polygon_id, patch_id, code_orig = code, phab, uncertain, type, typelevel, main_type, typeclass) %>%
+   select(polygon_id, patch_id, code_orig = code, phab, uncertain, type) %>%
   mutate(type = factor(type,
                        levels = levels(types$type)
                        )
@@ -161,7 +161,7 @@ habmap_other_type %>%
 ```{r}
 
 habmap_types_sf <- habmap_sf %>%
-  select(polygon_id, polygon_description) %>%
+  select(polygon_id, description_orig) %>%
   filter(polygon_id %in% habmap_types$polygon_id)
 
 ```
@@ -170,10 +170,10 @@ habmap_types_sf <- habmap_sf %>%
 
 ```{r}
 
-st_write(habmap_types_sf, "../../data/20_processed/habitatmap/habitatmap_processed.gpkg", layer = "habitatmap_polygons", driver = "GPKG")
+st_write(habmap_types_sf, "../../data/20_processed/habitatmap_stdized/habitatmap_stdized.gpkg", layer = "habitatmap_polygons", driver = "GPKG")
 
 con = dbConnect(SQLite(),
-                dbname = "../../data/20_processed/habitatmap/habitatmap_processed.gpkg")
+                dbname = "../../data/20_processed/habitatmap_stdized/habitatmap_stdized.gpkg")
 
 dbWriteTable(con, "habitatmap_patches", habmap_types)
 
