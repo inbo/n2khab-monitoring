@@ -64,7 +64,8 @@ Are all main types correct?
 
 ```{r}
 types_check %>% 
-    mutate(main_type_2 = ifelse(str_detect(type, "_|\\+"),
+    mutate(type = as.character(type),
+           main_type_2 = ifelse(str_detect(type, "_|\\+"),
                                 str_sub(type, 
                                         end = str_locate(type, "_|\\+") - 1),
                                 type)
