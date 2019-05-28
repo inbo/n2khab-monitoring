@@ -1141,7 +1141,7 @@ This workflow does not work for levels 8 and 9 because the subset of the raster 
 
 
 
-### Some geopackage experiments
+### Geopackage experimenting?
 
 Experimenting with geopackage format (on a layer of `GRTSmh_brick`) to see whether we can put all rasters into one geopackage:
 
@@ -1154,96 +1154,297 @@ writeRaster(r, filename = file.path(tempdir(), "GRTSmh_diffres.gpkg"),
 ```
 
 The "INT4S" datatype however gives an error, while the "INT2U" and "FLT4S" datatypes do work.
-But "INT2U" is useless for the first bands of the brick, so we use "FLT4S".
+But "INT2U" is useless for the first bands of the brick, so we could use "FLT4S".
+
+HOWEVER, earlier applications on the full dataset have demonstrated a problem: data _do_ change because of the switch from INT4S (in GDAL-terms: Int32) to FLT4S (in GDAL-terms: Float32).
+For example, the maximum number 67108857 is changed into 67108856...
+So we should stick with INT4S.
+
+The problems with the Int32 are because of the supported data types for GPKG by GDAL itself; see the command `gdalinfo --format GPKG` to see which data types are supported!
+
+So we removed the remainder of the GPKG experiment as it became obsolete.
+
+### Experimenting with Rasterlite
+
+We turn attention to another SQLite implementation, which supports subdatasets _and_ the Int32 datatype.
+While it is supported by GDAL and while being an open standard, it is not well supported by R's reading functions.
+
 
 ```{r}
-dataType(r)
+test <-  
+  raster(nrows = 6, ncols = 6,
+              vals = c(1:35, 67108857)
+  )
 ```
 
 
-```{r}
-r2 <- raster(file.path(tempdir(), "GRTSmh_diffres.gpkg"))
-r2 %>% spplot
-```
-
-```{r}
-r2 %>% dataType()
-```
-
-```{r}
-r2
-```
-
-```{r}
-gdalUtils::gdalinfo(file.path(tempdir(), "GRTSmh_diffres.gpkg"))
-```
-
-
-Also `write_stars()` gets the GDAL error for a INT4S datatype.
-
-```{r}
-r %>% 
-    st_as_stars %>% 
-    write_stars(dsn = file.path(tempdir(), "GRTSmh_diffres.gpkg"),
-                driver = "GPKG",
-                type = "Int32")
-```
-
-Taking the default 'Float32', does work (FLT4S):
-
-```{r}
-r %>% 
-    st_as_stars %>% 
-    write_stars(dsn = file.path(tempdir(), "GRTSmh_diffres.gpkg"),
-                driver = "GPKG")
-```
-
-Now, let's add a different raster into the geopackage (currently `writeRaster()` does not support this):
-
-```{r}
-pol %>% 
-        st_buffer(dist = -0.1) %>% # this is done in order to prevent ALL_TOUCHED=TRUE 
-                                   # from copying the border value of the neighbouring cell
-        st_rasterize(rtempl %>% 
-                         st_as_stars, 
-                     options = "ALL_TOUCHED=TRUE") %>% # in order to not only let cell 
-                                                       # centroids determine the value
-        write_stars(dsn = file.path(tempdir(), "GRTSmh_diffres.gpkg"),
-                driver = "GPKG",
-                options = c("RASTER_TABLE=lowres",
-                            "APPEND_SUBDATASET=YES"))
-```
-
-This works perfectly:
-
-```{r}
-gdalUtils::gdalinfo(file.path(tempdir(), "GRTSmh_diffres.gpkg"))
-```
-
-```{r}
-read_stars(file.path(tempdir(), "GRTSmh_diffres.gpkg"), sub = "GRTSmh_diffres")
-```
-
-```{r}
-read_stars(file.path(tempdir(), "GRTSmh_diffres.gpkg"), sub = "GRTSmh_diffres") %>% 
-    as("Raster") %>% 
-    spplot
-```
-
-```{r}
-read_stars(file.path(tempdir(), "GRTSmh_diffres.gpkg"), sub = "lowres")
-```
-
-
-Hey, that geopackage is just about 3.8 MB!
-What's the size of the geotiff? 5.6 MB, so the gpkg is more efficient with respect to file size.
-
-```{r}
-r %>% 
-    writeRaster(filename = file.path(tempdir(), "test"),
+```{r paged.print=FALSE}
+test %>% 
+  writeRaster(filename = file.path(tempdir(), "test"),
                     format = "GTiff",
                     datatype = "INT4S",
                     overwrite = TRUE)
+```
+
+```{r warning=FALSE}
+setwd(tempdir())
+system("gdal_translate -of Rasterlite -ot Int32 test.tif RASTERLITE:test.sqlite,table=table1")
+system("gdal_translate -of Rasterlite -ot Int32 test.tif RASTERLITE:test.sqlite,table=table2")
+```
+
+```{r}
+gdal_utils(util = "info", 
+           file.path(tempdir(), "test.sqlite"))
+```
+
+```{r warning=FALSE}
+setwd(tempdir())
+system("gdal_translate -of GTiff -ot Int32 RASTERLITE:test.sqlite,table=table1 table1.tif")
+system("gdal_translate -of GTiff -ot Int32 RASTERLITE:test.sqlite,table=table2 table2.tif")
+```
+
+From testing, it appears that `read_stars()` always returns FLT4S data, so it is always converted, which we don't want.
+Also, while stars cannot correctly write INT4S, it keeps the numbers in correct shape (`st_as_stars()`), even though it appears that it always converts to FLT4S (I presume there is no difference in memory, for R objects, so it is specific to the raster package to keep track of the file datatype).
+
+We can't read subdatasets from sqlite databases with either `raster()` or `read_stars()`, so we are left with the option of either just storing separate tifs (but note that multipaged tifs are supported from GDAL 3.0.0), or temporarily translating to/from Rasterlite with `gdal_translate` as above.
+
+```{r paged.print=FALSE}
+raster(file.path(tempdir(), "table2.tif")) %>% 
+  all.equal(test)
+```
+
+```{r}
+raster(file.path(tempdir(), "table2.tif")) %>% 
+  dataType
+```
+
+So we could use the following workflow while keeping the Int32 data type:
+
+R raster -> make GeoTIFF -> add into Rasterlite database -> extract subdataset as GeoTIFF -> R raster
+
+### Polygonized versions
+
+As polygonized layers are an intermediate step to the low-resolution raster versions, and because they may come in handy in mapping, it seems valuable to store them as well.
+
+Could this be done using the SQLite driver from GDAL, possibly even using the same SQLite database as above?
+
+```{r}
+pol1 <- 
+        subbrick[[1]] %>% 
+        st_as_stars %>% 
+        st_as_sf(as_points = FALSE, merge = TRUE)
+pol2 <- 
+        subbrick[[2]] %>% 
+        st_as_stars %>% 
+        st_as_sf(as_points = FALSE, merge = TRUE)
+```
+
+```{r}
+st_drivers() %>% filter(name == "SQLite")
+```
+
+It appears that we cannot use 'SPATIALITE=YES' with layers, so using normal sqlite database:
+
+```{r}
+pol1 %>% 
+  st_write(file.path(tempdir(), "poltest.sqlite"),
+           layer = "pol1",
+           driver = "SQLite")
+```
+
+```{r}
+pol2 %>% 
+  st_write(file.path(tempdir(), "poltest.sqlite"),
+           layer = "pol2",
+           driver = "SQLite")
+```
+
+We can read back in:
+
+```{r}
+st_read(file.path(tempdir(), "poltest.sqlite"),
+           layer = "pol2")
+```
+
+Can we add them in the Rasterlite database?
+
+```{r}
+pol1 %>% 
+  st_write(file.path(tempdir(), "test.sqlite"),
+           layer = "pol1",
+           driver = "SQLite")
+```
+
+
+```{r}
+pol2 %>% 
+  st_write(file.path(tempdir(), "test.sqlite"),
+           layer = "pol2",
+           driver = "SQLite")
+```
+
+Yes, we can!
+And furthermore, it appears that here the Spatialite standard is used, when inspecting the sqlite database!
+For example, the geometry is a binary, as is the case in Spatialite.
+It is indicated that all layers have a spatial index, which was missing in the original sqlite db!
+Also the original Rasterlite db has several databases referring to Spatialite.
+
+Let's check these layers:
+
+```{r}
+st_read(file.path(tempdir(), "test.sqlite"),
+           layer = "pol1") %>% 
+  all.equal(pol1)
+```
+
+A few things seem different, but probably this is only in semantics of metadata:
+
+```{r}
+pol1
+```
+
+```{r}
+pol1t <- st_read(file.path(tempdir(), "test.sqlite"),
+           layer = "pol1",
+           quiet = TRUE)
+pol1t 
+```
+
+It seems that the geometry's column name has changed to capitals...
+
+And again check the rasters:
+
+```{r warning=FALSE}
+setwd(tempdir())
+system("gdal_translate -of GTiff -ot Int32 RASTERLITE:test.sqlite,table=table1 table1.tif")
+system("gdal_translate -of GTiff -ot Int32 RASTERLITE:test.sqlite,table=table2 table2.tif")
+```
+
+```{r paged.print=FALSE}
+raster(file.path(tempdir(), "table2.tif")) %>% 
+  all.equal(test)
+```
+
+## Upscaling to Flanders: changing my mind
+
+
+```{r}
+dir.create(str_c(datapath, "/20_processed/GRTSmh_diffres"), recursive = TRUE)
+```
+
+```{r}
+datasetpath <- "../../data/20_processed/GRTSmh_diffres"
+```
+
+
+Steps for initialization of a Spatialite database, using the lowest resolution:
+
+```{r warning=FALSE, eval=FALSE}
+pol9 <- GRTSmh_brick[[9+1]] %>% 
+    st_as_stars %>% 
+    st_as_sf(as_points = FALSE, merge = TRUE)
+pol7 <- GRTSmh_brick[[7+1]] %>% 
+    st_as_stars %>% 
+    st_as_sf(as_points = FALSE, merge = TRUE)
+res <- 32 * 2 ^ 7
+pol_union <-
+    pol9 %>%
+    st_union
+pol_edge <- 
+    pol_union %>% 
+    st_buffer(-res) %>% 
+    st_difference(pol_union, .)
+polinterior_coords <- 
+    pol7 %>% 
+    filter(st_intersects(x = ., 
+                         y = pol_edge, 
+                         sparse = FALSE)) %>% 
+    mutate(area = st_area(geometry)) %>% 
+    filter(area == max(area)) %>% 
+    st_geometry %>% 
+    st_coordinates
+ext <- c(xmin = min(polinterior_coords[,1]),
+          xmax = max(polinterior_coords[,1]),
+          ymin = min(polinterior_coords[,2]),
+          ymax = max(polinterior_coords[,2])
+          ) %>% 
+        extent
+rtempl <- 
+    raster(ext = ext,
+           resolution = res,
+           crs = crs(GRTSmh_brick)) %>% 
+    extend(c(1, 1))
+pol7 %>% 
+    st_buffer(dist = -0.1) %>% # this is done in order to prevent ALL_TOUCHED=TRUE 
+                               # from copying the border value of the neighbouring cell
+    st_rasterize(rtempl %>% 
+                     st_as_stars, 
+                 options = "ALL_TOUCHED=TRUE") %>% # in order to not only let cell 
+                                                   # centroids determine the value
+    as("Raster") %>% 
+    .[!is.na(.), drop = FALSE] %>% 
+    writeRaster(filename = file.path(datasetpath, 
+                       "GRTSmh_diffres_level7.tif"),
+                format = "GTiff",
+                datatype = "INT4S",
+                overwrite = TRUE)
+setwd(datasetpath)
+system("gdal_translate -of Rasterlite -ot Int32 GRTSmh_diffres_level7.tif RASTERLITE:GRTSmh_diffres.sqlite,table=GRTSmh_diffres_level7")
+```
+
+Adding the polygon in the sqlite database (also make sqlite separately, for comparison with gpkg):
+
+```{r}
+pol7 %>% 
+    st_write(file.path(datasetpath, 
+                       "GRTSmh_diffres.sqlite"),
+           layer = "GRTSmh_polygonized_level7",
+           driver = "SQLite")
+```
+
+Comparing size to gpkg-version:
+
+```{r}
+pol7 %>% 
+    st_write(file.path(datasetpath, 
+                       "GRTSmh_diffres.gpkg"),
+           layer = "GRTSmh_polygonized_level7",
+           driver = "GPKG")
+```
+
+- The GPKG-version is _much_ smaller than a normal sqlite-database for vector data!
+- The TIF file is _much much_ smaller than the Rasterlite version!
+
+So, although it _is possible_ to nicely combine all raster + vector layers into one Rasterlite/Spatialite database file, we will settle with:
+
+- storing the raster layers as separate GeoTIFFs. The format is so much more concise!
+- storing the polygonized versions in one GPKG database.
+
+Some reading tests:
+
+```{r}
+pol7 <- st_read(file.path(datasetpath, 
+                       "GRTSmh_diffres.sqlite"),
+           layer = "GRTSmh_polygonized_level7",
+           quiet = TRUE)
+pol7
+```
+
+```{r}
+pol7 <- st_read(file.path(datasetpath, 
+                       "GRTSmh_diffres.gpkg"),
+           layer = "GRTSmh_polygonized_level7",
+           quiet = TRUE)
+pol7
+```
+
+```{r}
+setwd(datasetpath)
+system("gdal_translate -of GTiff -ot Int32 RASTERLITE:GRTSmh_diffres.sqlite,table=GRTSmh_diffres_level7 GRTSmh_diffres_level7test.tif")
+```
+
+```{r}
+raster(file.path(datasetpath, "GRTSmh_diffres_level7test.tif"))
 ```
 
 
