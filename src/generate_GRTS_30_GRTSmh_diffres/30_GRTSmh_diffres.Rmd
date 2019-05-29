@@ -1,0 +1,204 @@
+# Settings
+
+```{r}
+datapath <- "../../data"
+```
+
+
+# Prerequisites
+
+```{r}
+GRTSmh_brick <- 
+    read_GRTSmh(datapath, brick = TRUE)
+GRTSmh_brick
+```
+
+
+```{r}
+dir.create(str_c(datapath, "/20_processed/GRTSmh_diffres"), recursive = TRUE)
+```
+
+```{r}
+datasetpath <- "../../data/20_processed/GRTSmh_diffres"
+```
+
+
+# Execution
+
+We will create aggregated versions from the `GRTSmh_brick` raster layers levels 1 to 9 (i), which are at a resolution of 32 m while their information is at a resolution of `32 * 2 ^ i` meters.
+We go via a polygonized version to finally create rasters at the lower resolution but with the right origins to fit with the original information.
+Both the polygonized and rasterized version form part of the datasource.
+
+Derived from code in the notebook `miscellaneous/GRTSmh.Rmd`, we use a fixed raster template for all levels, which was found by applying the code at level 9.
+The notebook sample code resulted in long calculation time of an interior bounding box at lower levels for the Flemish area, that's why we choose to use level 9 to set the initial extent.
+
+
+```{r}
+ext <- c(xmin = 22030,
+              xmax = 22030 + 15 * 16384,
+              ymin = 153054,
+              ymax = 153054 + 6 * 16384
+              ) %>% 
+            extent
+```
+
+```{r warning=FALSE}
+system.time({
+    
+for (i in 9:1) {
+    cat("Starting level", i, "...\n")
+    
+    pol <- GRTSmh_brick[[i + 1]] %>% 
+        st_as_stars %>% 
+        st_as_sf(as_points = FALSE, merge = TRUE)
+    cat("Polygonization step finished. Writing polygon layer...\n")
+    
+    pol %>%
+        st_write(file.path(datasetpath,
+                           "GRTSmh_diffres.gpkg"),
+               layer = str_c("GRTSmh_polygonized_level", i),
+               driver = "GPKG")
+    cat("Done. Starting rasterization...\n")
+    
+    res <- 32 * 2 ^ i
+    rtempl <- 
+        raster(ext = ext,
+               resolution = res,
+               crs = crs(GRTSmh_brick)) %>% 
+        st_as_stars
+    colnames(pol)[1] <- "value"
+    pol %>% 
+        st_buffer(dist = -2) %>% # this is done in order to prevent ALL_TOUCHED=TRUE 
+                                   # from copying the border value of the neighbouring cell
+        st_rasterize(rtempl, 
+                     options = "ALL_TOUCHED=TRUE") %>% # in order to not only let cell 
+                                                       # centroids determine the value
+        as("Raster") %>% 
+        .[!is.na(.), drop = FALSE] %>% 
+        writeRaster(filename = file.path(datasetpath, 
+                           str_c("GRTSmh_diffres.", i, ".tif")),
+                    format = "GTiff",
+                    datatype = "INT4S",
+                    overwrite = TRUE)
+    cat("Raster has been written as", 
+        str_c("GRTSmh_diffres.", i, ".tif") 
+        )
+    
+    gc()
+        
+    cat("Level", i, "finished!\n")
+}
+})
+```
+
+
+
+# Checks
+
+```{r paged.print=FALSE}
+st_layers(file.path(datasetpath, 
+                           "GRTSmh_diffres.gpkg"))
+```
+
+```{r}
+st_read(file.path(datasetpath, 
+                           "GRTSmh_diffres.gpkg"),
+        layer = "GRTSmh_polygonized_level4",
+        quiet = TRUE)
+```
+
+
+```{r}
+raster(file.path(datasetpath, "GRTSmh_diffres.8.tif")) %>% 
+    spplot
+```
+
+```{r}
+st_read(file.path(datasetpath, 
+                           "GRTSmh_diffres.gpkg"),
+        layer = "GRTSmh_polygonized_level8",
+        quiet = TRUE) %>% 
+    plot
+```
+
+Combined maps of rasters and polygons:
+
+```{r fig.width=12}
+for (i in 9:8) {
+    r <- raster(file.path(datasetpath, 
+                          str_c("GRTSmh_diffres.",
+                                i, ".tif"))
+    )
+    pol <- st_read(file.path(datasetpath,
+       "GRTSmh_diffres.gpkg"),
+            layer = str_c("GRTSmh_polygonized_level", i),
+            quiet = TRUE)
+(r %>% 
+    tm_shape() +
+    tm_raster(palette = get_col_regions(),
+              n = 1000) +
+    tm_shape(pol) +
+    tm_polygons(alpha = 0, border.col = "grey") +
+    tm_text("value", size = 0.6, col = "grey") +
+    tm_legend(show = FALSE)) %>% 
+    print
+}
+```
+
+```{r fig.width=12}
+for (i in 7:5) {
+    r <- raster(file.path(datasetpath, 
+                          str_c("GRTSmh_diffres.",
+                                i, ".tif"))
+    )
+    pol <- st_read(file.path(datasetpath,
+       "GRTSmh_diffres.gpkg"),
+            layer = str_c("GRTSmh_polygonized_level", i),
+            quiet = TRUE)
+(r %>% 
+    tm_shape() +
+    tm_raster(palette = get_col_regions(),
+              n = 1000) +
+    tm_shape(pol) +
+    tm_polygons(alpha = 0, border.col = "grey") +
+    tm_legend(show = FALSE)) %>% 
+    print
+}
+```
+
+Maps of a subset (Voerstreek):
+
+```{r warning = FALSE, fig.width=12}
+for (i in 4:2) {
+    r <- raster(file.path(datasetpath, 
+                          str_c("GRTSmh_diffres.",
+                                i, ".tif"))
+    )
+    r <- r[floor(nrow(r)/8 * 7):nrow(r), 
+           floor(ncol(r)/16 * 15):ncol(r), 
+           drop = FALSE]
+    sfbbox <- 
+        st_bbox(r) %>% 
+        st_as_sfc %>% 
+        st_sf
+    pol <- st_read(file.path(datasetpath,
+       "GRTSmh_diffres.gpkg"),
+            layer = str_c("GRTSmh_polygonized_level", i),
+            quiet = TRUE)
+    pol <- pol[sfbbox,,]
+(r %>% 
+    tm_shape() +
+    tm_raster(palette = get_col_regions(),
+              n = 1000) +
+    tm_shape(pol) +
+    tm_polygons(alpha = 0, border.col = "grey") +
+    tm_legend(show = FALSE)) %>% 
+    print
+}
+```
+
+
+
+
+
+
