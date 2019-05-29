@@ -51,6 +51,7 @@ for (i in 9:1) {
     pol <- GRTSmh_brick[[i + 1]] %>% 
         st_as_stars %>% 
         st_as_sf(as_points = FALSE, merge = TRUE)
+    colnames(pol)[1] <- "value"
     cat("Polygonization step finished. Writing polygon layer...\n")
     
     pol %>%
@@ -66,7 +67,6 @@ for (i in 9:1) {
                resolution = res,
                crs = crs(GRTSmh_brick)) %>% 
         st_as_stars
-    colnames(pol)[1] <- "value"
     pol %>% 
         st_buffer(dist = -2) %>% # this is done in order to prevent ALL_TOUCHED=TRUE 
                                    # from copying the border value of the neighbouring cell
