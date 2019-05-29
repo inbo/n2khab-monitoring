@@ -1088,8 +1088,9 @@ for (i in 2:8) {
         extend(c(1, 1))
     colnames(pol)[1] <- "value"
     pol %>% 
-        st_buffer(dist = -0.1) %>% # this is done in order to prevent ALL_TOUCHED=TRUE 
+        st_buffer(dist = -2) %>% # this is done in order to prevent ALL_TOUCHED=TRUE 
                                    # from copying the border value of the neighbouring cell
+                                   # the original value of 0.1 appeared too  small!
         st_rasterize(rtempl %>% 
                          st_as_stars, 
                      options = "ALL_TOUCHED=TRUE") %>% # in order to not only let cell 
@@ -1128,10 +1129,11 @@ for (i in 1:7) {
                                                i, 
                                                ".gpkg"))) 
     (tm_shape(myraster) +
-        tm_raster() +
+        tm_raster(palette = get_col_regions(),
+                  n = 1000) +
         tm_shape(mypol) +
         tm_polygons(alpha = 0) +
-        # tm_text("value", size = 0.6) +
+        # tm_text("value", size = 0.6, col = "grey") +
         tm_legend(show = FALSE)) %>% 
         print
 }
