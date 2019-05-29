@@ -198,7 +198,32 @@ for (i in 4:2) {
 ```
 
 
+Are all values unique?
 
+```{r}
+lapply(1:9, function(x) {
+    read_GRTSmh_diffres(datapath, level = x) %>% 
+    values %>% 
+    enframe %>% 
+    filter(!is.na(value)) %>% 
+    count(value) %>% 
+    filter(n > 1) %>% 
+    nrow == 0
+})
+```
+
+Do min-max statistics correspond with those of `GRTSmh_brick`?
+
+```{r}
+for (i in 1:9) {
+    r <- read_GRTSmh_diffres(datapath, level = i)
+    b <- GRTSmh_brick[[i + 1]]
+    cat("Level", i, ": \nmax: ")
+    cat(r@data@max == b@data@max, "\n")
+    cat("min: ")
+    cat(r@data@min == b@data@min, "\n")
+}
+```
 
 
 
