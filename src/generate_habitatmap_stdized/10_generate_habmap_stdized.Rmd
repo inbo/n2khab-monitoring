@@ -23,14 +23,14 @@ straightforward. Table \@ref(tab:code_corrected) shows the corrected codes.
 habmap_correction <-  gs_key("1Lltpq1_OQENZKrCmfDLuBiaZQ0_YCoGkFAqcOtFRdHg") %>%
   gs_read(ws = 3)
 
-write_vc(habmap_correction,  "data/habmap_correction",
+write_vc(habmap_correction,  "habmap_correction/habmap_correction",
          sorting = "code")
 
 ```
 
 ```{r code_corrected}
 
-habmap_correction <- read_vc("data/habmap_correction")
+habmap_correction <- read_vc("habmap_correction/habmap_correction")
 
 habmap_correction %>%
   kable(caption = "Corrected codes in habitat map") %>%
@@ -44,7 +44,7 @@ Every polygon in the habitat map can consist of maximum 5 different vegetation t
 
 We will convert the attribute table to a long format, so that every row contains one patch. A new variable is created to store the patch number (1 to 5): 'patch_id'.
 
-For some patches the vegetation type is uncertain, and 2 or 3 possible vegetation types are provided, separated with a ','. We will split the different possible vegetation types and create one row for each of them. An additional variable 'uncertain' will be TRUE if a patch consists of 2 or 3 possible vegetation types, and FALSE if only one vegetation type is provided.
+For some patches the vegetation type is uncertain, and 2 or 3 possible vegetation types are provided, separated with a ','. We will split the different possible vegetation types and create one row for each of them. An additional variable 'certain' will be FALSE if a patch consists of 2 or 3 possible vegetation types, and TRUE if only one vegetation type is provided.
 
 
 ```{r select_polygons}
@@ -96,7 +96,7 @@ if(sum(habmap_correction$code %in% habmap_longHAB$code) > 0){
 
 habmap_long <- habmap_longHAB %>%
     left_join(habmap_longPHAB, by = c("polygon_id", "patch_id")) %>%
-    mutate(uncertain = str_detect(code, ",")) %>%
+    mutate(certain = !str_detect(code, ",")) %>%
     separate(code,
              into = c("type1", "type2", "type3"),
              sep = ",",
@@ -139,7 +139,7 @@ habmap_long <- habmap_long %>%
 
 habmap_types <- habmap_long %>%
   filter(!is.na(typelevel)) %>%
-   select(polygon_id, patch_id, code_orig = code, phab, uncertain, type) %>%
+   select(polygon_id, patch_id, code_orig = code, phab, certain, type) %>%
   mutate(type = factor(type,
                        levels = levels(types$type)
                        )
@@ -150,7 +150,7 @@ habmap_other_type <- habmap_long %>%
   filter(is.na(typelevel))
 
 habmap_other_type %>%
-  select(polygon_id, patch_id, code, phab, uncertain, type) %>%
+  select(polygon_id, patch_id, code, phab, certain, type) %>%
   kable() %>%
   kable_styling()
 
