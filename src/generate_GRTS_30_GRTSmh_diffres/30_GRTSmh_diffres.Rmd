@@ -225,5 +225,26 @@ for (i in 1:9) {
 }
 ```
 
+Are the occurring values the same between both data sources? (only subset of layers tested)
+
+```{r}
+lapply(4:9, function(x) {
+    read_GRTSmh_diffres(datapath, level = x) %>% 
+    values %>% 
+    enframe %>% 
+    filter(!is.na(value)) %>% 
+    arrange(value) %>% 
+    .$value %>% 
+    all.equal({
+        GRTSmh_brick[[x + 1]] %>% 
+            values %>% 
+            enframe %>% 
+            filter(!is.na(value)) %>% 
+            distinct(value) %>% 
+            arrange(value) %>% 
+            .$value
+    })
+})
+```
 
 
