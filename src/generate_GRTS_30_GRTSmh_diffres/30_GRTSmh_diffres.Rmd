@@ -26,12 +26,25 @@ datasetpath <- "../../data/20_processed/GRTSmh_diffres"
 # Execution
 
 We will create aggregated versions from the `GRTSmh_brick` raster layers levels 1 to 9 (i), which are at a resolution of 32 m while their information is at a resolution of `32 * 2 ^ i` meters.
-We go via a polygonized version to finally create rasters at the lower resolution but with the right origins to fit with the original information.
+For levels 4 to 9, we go via a polygonized version to finally create rasters at the lower resolution but with the right origins to fit with the original information.
 Both the polygonized and rasterized version form part of the datasource.
 
 Derived from code in the notebook `miscellaneous/GRTSmh.Rmd`, we use a fixed raster template for all levels, which was found by applying the code at level 9.
 The notebook sample code resulted in long calculation time of an interior bounding box at lower levels for the Flemish area, that's why we choose to use level 9 to set the initial extent.
 
+Originally, we attempted to do the same for levels 1 to 3.
+While the result was OK for levels 2 to 3, it was NOT for level 1 (many duplicate values appeared in the result, which happened in the polygonization step).
+Moreover:
+
+- the `st_rasterize step()` took quite long for these levels;
+- having the polygonized versions in the resulting data source is more useful at higher levels (i.e. for potential applications);
+- we apply another solution for levels 1 to 3, going via a SpatialPointsDataFrame and applying `raster::rasterize()` to it.
+This appeared to perform relatively fast, much faster than before!
+And, the results were fine for all three levels.
+
+Below, levels 2 and 3 are calculated in both ways, the results are verified to be equal, and only one GeoTIFF is kept.
+
+Setting the extent of the raster template, needed at level 9 but applied at all levels as initial extent:
 
 ```{r}
 ext <- c(xmin = 22030,
@@ -42,46 +55,58 @@ ext <- c(xmin = 22030,
             extent
 ```
 
+Calculations for levels 9 through 2 (only levels 9 to 4 will be kept, though), using polygonization:
+
 ```{r warning=FALSE}
 system.time({
     
-for (i in 9:1) {
+for (i in 9:2) {
     cat("Starting level", i, "...\n")
     
     pol <- GRTSmh_brick[[i + 1]] %>% 
         st_as_stars %>% 
         st_as_sf(as_points = FALSE, merge = TRUE)
     colnames(pol)[1] <- "value"
-    cat("Polygonization step finished. Writing polygon layer...\n")
+    cat("Polygonization step finished.\n")
     
-    pol %>%
+    if (i >= 4) {
+        cat("Writing polygon layer...\n")
+        pol %>%
         st_write(file.path(datasetpath,
                            "GRTSmh_diffres.gpkg"),
                layer = str_c("GRTSmh_polygonized_level", i),
                driver = "GPKG")
-    cat("Done. Starting rasterization...\n")
+        cat("Done.\n")
+    }
     
+    cat("Starting rasterization...\n")
+
     res <- 32 * 2 ^ i
-    rtempl <- 
+    rtempl <-
         raster(ext = ext,
                resolution = res,
-               crs = crs(GRTSmh_brick)) %>% 
+               crs = crs(GRTSmh_brick)) %>%
         st_as_stars
-    pol %>% 
-        st_buffer(dist = -2) %>% # this is done in order to prevent ALL_TOUCHED=TRUE 
+    pol %>%
+        st_buffer(dist = -2) %>% # this is done in order to prevent ALL_TOUCHED=TRUE
                                    # from copying the border value of the neighbouring cell
-        st_rasterize(rtempl, 
-                     options = "ALL_TOUCHED=TRUE") %>% # in order to not only let cell 
+        st_rasterize(rtempl,
+                     options = "ALL_TOUCHED=TRUE") %>% # in order to not only let cell
                                                        # centroids determine the value
-        as("Raster") %>% 
-        .[!is.na(.), drop = FALSE] %>% 
-        writeRaster(filename = file.path(datasetpath, 
-                           str_c("GRTSmh_diffres.", i, ".tif")),
+        as("Raster") %>%
+        .[!is.na(.), drop = FALSE] %>%
+        writeRaster(filename = file.path(datasetpath,
+                                           str_c("GRTSmh_diffres.", 
+                                                 ifelse(i < 4,
+                                                        str_c(i, "poly"),
+                                                        i), 
+                                                 ".tif")
+                                         ),
                     format = "GTiff",
                     datatype = "INT4S",
                     overwrite = TRUE)
-    cat("Raster has been written as", 
-        str_c("GRTSmh_diffres.", i, ".tif") 
+    cat("Raster has been written as",
+        str_c("GRTSmh_diffres.", i, ".tif")
         )
     
     gc()
@@ -91,6 +116,38 @@ for (i in 9:1) {
 })
 ```
 
+Calculations for levels 1 to 3 via a SpatialPointsDataFrame:
+
+```{r warning=FALSE}
+system.time({
+    
+for (i in 3:1) {
+    cat("Starting level", i, "...\n")
+    
+    res <- 32 * 2 ^ i
+    rtempl <-
+        raster(ext = ext,
+               resolution = res,
+               crs = crs(GRTSmh_brick))
+    GRTSmh_brick[[i + 1]] %>%
+        rasterToPoints(spatial = TRUE) %>%
+        rasterize(x = ., 
+                  y = rtempl, 
+                  field = names(.)) %>% 
+        .[!is.na(.), drop = FALSE] %>%
+        writeRaster(filename = file.path(datasetpath,
+                           str_c("GRTSmh_diffres.", i, ".tif")),
+                    format = "GTiff",
+                    datatype = "INT4S",
+                    overwrite = TRUE)
+    cat("Raster has been written as",
+        str_c("GRTSmh_diffres.", i, ".tif\n")
+        )
+    
+    cat("Level", i, "finished!\n")
+}
+})
+```
 
 
 # Checks
@@ -169,23 +226,25 @@ for (i in 7:5) {
 Maps of a subset (Voerstreek):
 
 ```{r warning = FALSE, fig.width=12}
-for (i in 4:2) {
+for (i in 4:1) {
     r <- raster(file.path(datasetpath, 
                           str_c("GRTSmh_diffres.",
                                 i, ".tif"))
     )
-    r <- r[floor(nrow(r)/8 * 7):nrow(r), 
-           floor(ncol(r)/16 * 15):ncol(r), 
+    r <- r[floor(nrow(r)/16 * 15):nrow(r), 
+           floor(ncol(r)/32 * 31):ncol(r), 
            drop = FALSE]
-    sfbbox <- 
-        st_bbox(r) %>% 
-        st_as_sfc %>% 
-        st_sf
-    pol <- st_read(file.path(datasetpath,
-       "GRTSmh_diffres.gpkg"),
-            layer = str_c("GRTSmh_polygonized_level", i),
-            quiet = TRUE)
-    pol <- pol[sfbbox,,]
+    if (i == 4) {
+        sfbbox <- 
+            st_bbox(r) %>% 
+            st_as_sfc %>% 
+            st_sf
+        pol <- st_read(file.path(datasetpath,
+           "GRTSmh_diffres.gpkg"),
+                layer = str_c("GRTSmh_polygonized_level", i),
+                quiet = TRUE)
+        pol <- pol[sfbbox,,]
+    }
 (r %>% 
     tm_shape() +
     tm_raster(palette = get_col_regions(),
@@ -247,4 +306,30 @@ lapply(4:9, function(x) {
 })
 ```
 
+Comparing via-polygon and via-point rasters at levels 2 and 3:
+
+```{r}
+r2 <- read_GRTSmh_diffres(datapath, level = 2)
+r2poly <- raster(file.path(datasetpath, "GRTSmh_diffres.2poly.tif"))
+all.equal(r2[], r2poly[])
+```
+
+```{r}
+r3 <- read_GRTSmh_diffres(datapath, level = 3)
+r3poly <- raster(file.path(datasetpath, "GRTSmh_diffres.3poly.tif"))
+all.equal(r3[], r3poly[])
+```
+
+(For level 1 this was not the case, as explained earlier.)
+
+
+
+# Discarding obsolete files
+
+Deleting the via-polygon rasters for levels 2 and 3:
+
+```{r}
+file.remove(file.path(datasetpath, "GRTSmh_diffres.3poly.tif"),
+            file.path(datasetpath, "GRTSmh_diffres.2poly.tif"))
+```
 

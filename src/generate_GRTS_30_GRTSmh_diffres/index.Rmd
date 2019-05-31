@@ -37,7 +37,9 @@ output:
 ---
 
 ```{r setup, include=FALSE}
-options(stringsAsFactors = FALSE)
+options(stringsAsFactors = FALSE,
+        scipen = 999, 
+        digits = 15)
 library(raster)
 library(tidyverse)
 library(stars)

@@ -904,11 +904,9 @@ pol %>%
 
 ## Rasterization step
 
-We could compare `raster::raster()`, `fasterize::fasterize()` and `stars::st_rasterize()`.
+We could compare `raster::raster()`,`raster::rasterize()`, `fasterize::fasterize()` and `stars::st_rasterize()`.
 
 For that, we need to create a raster template.
-
-At least it is clear that `raster::rasterize()` is not efficient.
 
 However a further option is: `stars::aggregate()`. Maybe first have a look at this; could this prevent the need from going back & forth via polygons?
 
@@ -1031,6 +1029,25 @@ pol %>%
 ```
 
 See?
+
+### Attempting `raster::rasterize()`
+
+```{r}
+points6 <- subbrick$layer.6 %>% 
+  rasterToPoints(spatial = TRUE)
+points6 %>% 
+  spplot(cex = 0.01)
+```
+
+```{r}
+points6 %>% 
+  rasterize(rtempl,
+            field = "layer.6") %>% 
+  .[!is.na(.), drop = FALSE] %>% 
+  spplot
+```
+
+Works perfect, and from applications at the Flemish level (see further and under `src/generate_GRTS_30_GRTSmh_diffres`), I must conclude that `raster::rasterize()` _is very efficient_, at least for points-to-raster calculations.
 
 
 ## Wrapping up
@@ -1449,7 +1466,15 @@ system("gdal_translate -of GTiff -ot Int32 RASTERLITE:GRTSmh_diffres.sqlite,tabl
 raster(file.path(datasetpath, "GRTSmh_diffres_level7test.tif"))
 ```
 
+### Note on the lowest levels (highest resolution)
 
+Using the above workflow (polygonization - rasterization) didn't work out well for level 1 (resolution 64 m), i.e. tests on the result showed repeats of the same value at two different locations.
+It's not clear how this became, but it occurs in stars's polygonization step.
 
+Therefore, for the lowests levels we also test a workflow going through points, as the polygonized between-result:
 
+- is more useful as such at higher levels (i.e. for potential applications);
+- is not needed at every level for calculating the raster template, because we use the one raster template of level 9 to do rasterization at all levels.
+
+The workflow via points is the `raster::rasterize()` workflow from above.
 
