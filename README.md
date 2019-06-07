@@ -1,6 +1,6 @@
 ## Welcome
 
-### ... to this package
+### ... to the n2khabutils package
 
 This repo holds _the **n2khabutils** R package with data definitions and preprocessing functions_, supporting _reproducible_ and _transparent_ analyses on Flemish Natura 2000 habitats and regionally important biotopes (RIBs).
 Hence the package provides broad _utilities_ (**utils**) for Natura 2000 (**n2k**) habitats (**hab**) analyses in Flanders.
