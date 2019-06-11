@@ -1,6 +1,17 @@
 .Rproj.user
 .Rhistory
 *.html
+!header.html
+*.tex
+!header.tex
 data/
 hashes.csv
 .~lock*
+*.Rcheck/
+*.tar.gz
+.httr-oauth
+src/**/*.md
+!src/miscellaneous/README.md
+_book*
+inst/doc
+src/private_code.R

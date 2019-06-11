@@ -49,8 +49,8 @@ _Explanatory notes on function arguments used further:_
 - `file`: the filename, without extension in the case of multiple files with different extensions
 - `outputdir`: the directory where the dataset is to be written (should be a subfolder of `outputdir` named as the dataset's ID)
 - `threshold_pct`: the areal percentage threshold used to withhold types from `habitatmap`
-- `resolution`: the resolution that the user wants for the evaluation grid
-- `evaluation_grid`: coarse grid based on `GRTSmaster_habitats`
+- `resolution`: the resolution that the user wants for the highlevel raster
+- `highlevel_raster`: coarse raster based on `GRTSmaster_habitats`
 - `cell_samplesizes`: dataframe with sample size per evaluation cell
 - `connection`: database connection
 
@@ -106,14 +106,17 @@ _**Results: to be written into repo n2khab-samplingframes**_
 A 'base' sampling frame is implemented as a unioned **dataframe** of the spatial target populations of the respective types (for all monitoring schemes of MNE or MHQ as a whole).
 Each row represents a spatial unit that belongs to the target population of one type.
 The 'base' sampling frame can either be separated between MNE and MHQ, or provided with a TRUE/FALSE attribute for MNE and MHQ.
-The spatial unit can correspond to a grid cell from a GRTS master grid (terrestrial types), a line segment (lotic types) or a polygon of non-fixed size (lentic types).
+The spatial unit can correspond to a raster cell from a GRTS master raster (terrestrial types), a line segment (lotic types) or a polygon of non-fixed size (lentic types).
 
 The 'base' sampling frame needs input data in order to provide the following attributes when drawing samples:
 
 - spatial unit definition (ID, spatial attributes): derived from:
     - `GRTSmaster_habitats`
-    - `watersurfaces`
-    - `habitatstreams`
+    - `terr_habitatmap`
+    - `integrated_habitatmap`
+    - `mhq_terrestrial_locs`
+    - `mhq_lentic_locs`
+    - `mhq_lotic_locs`
     - `flanders` (used to restrict the previous layers, as far as needed)
 - the attributes 'type' and the type's spatial proportion (see 2.1)
 - domains:
@@ -124,7 +127,7 @@ The 'base' sampling frame needs input data in order to provide the following att
     - algorithms to join the `GRTSmaster_habitats` ranking number to spatial units (of terrestrial, lotic, lentic types respectively)
     
 In practice, it is possible to build up the base sampling frame in steps, i.e. according to the needs.
-E.g., the addition of `watersurfaces` and `habitatstreams` can also be postponed.
+E.g., the addition of `integrated_habitatmap` (which combines `terr_habitatmap` with `watersurfaces`, `habitatstreams`) can also be postponed.
     
     
 <DIV STYLE="background:#E8C3D58B;padding:10px">
@@ -146,18 +149,18 @@ _**Results: to be written into repo n2khab-samplingframes**_
 
 - relevant existing measurement locations with 'usefulness' attributes (see 2.3)
 - `samplingframe`
-- evaluation grid
+- highlevel raster for evaluation
 - aimed sample size for each evaluation cell
 - sampling design attributes, especially spatial sample sizes
 
-Plus the supporting functions (see [further](#intermediate)) to scale up `GRTSmaster_habitats` to make the evaluation grid and calculate the expected sample size for each evaluation cell.
+Plus the supporting functions (see [further](#intermediate)) to scale up `GRTSmaster_habitats` to make the highlevel raster and calculate the expected sample size for each evaluation cell.
 
 <DIV STYLE="background:#E8C3D58B;padding:10px">
 
 _**Needed functions: in repo n2khab-mne-design:**_
 
-- `sample_legacy_sites_groundwater(evaluation_grid, cell_samplesizes, outputdir)`
-- `sample_probabilistic_sites_groundwater(evaluation_grid, cell_samplesizes, outputdir)`
+- `sample_legacy_sites_groundwater(highlevel_raster, cell_samplesizes, outputdir)`
+- `sample_probabilistic_sites_groundwater(highlevel_raster, cell_samplesizes, outputdir)`
 
 The suffix `_groundwater` can also be replaced by something else. Subprogramme (e.g. groundwater) specific functions are used here because of the peculiarities.
 
@@ -190,7 +193,7 @@ _**Results: to be written into repo n2khab-mne-design**_
 I.e. including model-assisted inference.
 
 - sampling-unit-level design attributes, including type, sampling weights, time (at least at the level of the revisit design's specifications), domain and poststratum specification
-- `types_per_scheme`, defining typegroups if applicable
+- `scheme_types`, defining typegroups if applicable
 - auxiliary variable(s) (see [draft list](https://docs.google.com/spreadsheets/d/14jiHfF4vZUlmfPKiry8HCDDt-HFFvhDhW9_SFvtdSkk) -- in Dutch), known for the whole of the sampling frame, either:
     - categorical variable defining poststrata (for poststratification)
     - continuous variable (for regression estimation)
@@ -226,26 +229,22 @@ _**Results: to be written into repo n2khab-mne-design (simulations) or n2khab-mn
 
 ## 2.1 Data & functions to obtain the attributes 'type' and the type's spatial proportion
 
-Possible dataframes or spatial objects to join this information to, include `GRTSmaster_habitats`, `groundwater_sites`, `lenticwater_sites`, ... Often, more than one type can be linked to a spatial unit and therefore the information is typically not directly part of a spatial object (they use a common identifier). Instead, a long (tidy) dataframe is generated to enlist all types that are recorded at a location.
+Possible dataframes or spatial objects to join this information to, include `GRTSmaster_habitats`, `groundwater_sites`, `lenticwater_sites`, ... Often, more than one type can be linked to a spatial unit and therefore the information is typically not directly part of a spatial object (they use a common identifier). Instead, a long (tidy) dataframe (tibble) is generated to enlist all types that are recorded at a location.
 
-Depending on the purpose, the type-attribute is to be derived from one of more of the following:
+Depending on the purpose, the type-attribute is to be derived from one or more of the following:
 
 - `habitatmap`
 - `habitatdune`
 - `habitatstreams`
 - `watersurfaces`
-- `mhq_terrestrial_locs`
 - `mhq_lentic_locs`
 - `mhq_lotic_locs`
 
-Moreover, it is brought in consistency, and restricted to the type codes from the following lists:
-
-- `types`
-- `types_per_scheme`
+Moreover, it is brought in consistency, and restricted to the type codes from the datasource `types`.
 
 Also, main types need to be linked to their corresponding _subtypes_ in order to be picked up when selections are defined at the subtype level (needed when no subtype information exists for a given spatial object).
 
-Further, extra attributes is needed in most applications -- especially when using the `habitatmap` dataset: the rank and the associated areal proportion of each row.
+Further, extra attributes are needed in most applications -- especially when using the `habitatmap` dataset: the rank and the associated areal proportion of each row.
 
 Ideally, an intermediate spatial layer is generated that combines the above layers and integrates their information.
 
@@ -254,12 +253,12 @@ Ideally, an intermediate spatial layer is generated that combines the above laye
 
 _**Needed functions: in package n2khabutils:**_
 
-Both functions take into account type code consistency and link subtypes to main types. Both functions generate a data set consisting of both a spatial object and a long / tidy dataframe, including areal proportions.
+Both functions take into account type code consistency and link subtypes to main types. Both functions generate a data set consisting of both a spatial object and a long / tidy dataframe (tibble), including areal proportions.
 
 - `write_terr_habitatmap(threshold_pct, outputdir)`
-    - this function reads and integrates `habitatmap`, `habitatdune` and `mhq_terrestrial_locs`
+    - this function reads and integrates `habitatmap` and `habitatdune`
 - `write_integrated_habitatmap(threshold_pct, outputdir)`
-    - incorporates `write_terr_habitatmap()` but inserts the spatial units from `habitatstreams` and `watersurfaces` while retaining useful (type) attributes, including those from `mhq_lentic_locs` and `mhq_lotic_locs`
+    - incorporates `write_terr_habitatmap()` but inserts the spatial units from `habitatstreams` and `watersurfaces` while retaining useful (type) attributes, ideally including those from `mhq_lentic_locs` and `mhq_lotic_locs`
 
 _**Dedicated writing workflow (scripts/Rmarkdown): in repo n2khab-inputs**_
 
@@ -274,7 +273,7 @@ _**Results of the dedicated writing workflow: to be written into `data/20_proces
 Separate data next to the sampling frame are needed to restrict the spatial target population for each monitoring scheme, in order to completely define the respective spatial target populations. These data are comprised of:
 
 - `schemes`: provides an ID for each monitoring scheme, its defining attributes (e.g. in MNE: compartment, environmental pressure, (sometimes:) variable) and mentions whether a further spatial restriction layer is needed
-- `types_per_scheme`: dataframe that lists the types of the target population of respective monitoring schemes
+- `scheme_types`: dataframe that lists the types of the target population of respective monitoring schemes
 - spatial restriction to units irrespective of type -- depending on the monitoring scheme (see [list](https://docs.google.com/spreadsheets/d/14jiHfF4vZUlmfPKiry8HCDDt-HFFvhDhW9_SFvtdSkk/edit#gid=907349910)): derived from:
     - `shallowgroundwater`
     - `floodsensitive`
@@ -285,7 +284,7 @@ Separate data next to the sampling frame are needed to restrict the spatial targ
 _**Needed functions: in package n2khabutils:**_
 
 - `read_schemes(path, file)`
-- `read_types_per_scheme(path, file)`
+- `read_scheme_types(path, file)`
 - `read_shallowgroundwater(path, file)`
 - `read_floodsensitive(path, file)`
 
@@ -322,7 +321,7 @@ _**Needed functions: in repo inborutils:**_
     - the function returns a spatial object (hereafter named `groundwater_sites`) with the quality criteria, and with the piezometer IDs and coordinates
 - `spatialjoin_groundwater_sites(object, topological_criterion, groundwater_sites)`
     - takes a spatial R object (e.g. `soilmap`, `terr_habitatmap`, `integrated_habitatmap`) and uses a `topological_criterion` (e.g. intersect with buffer around piezometers with radius x) to make a spatial join with a spatial object `groundwater_sites` as returned by `qualify_groundwater_sites()`
-    - returns a tidy dataframe (hereafter named `groundwater_joinedattributes`) with piezometer IDs and the joined attributes (as buffers may be used, a long format is necessary)
+    - returns a tidy dataframe (tibble) (hereafter named `groundwater_joinedattributes`) with piezometer IDs and the joined attributes (as buffers may be used, a long format is necessary)
 
 _**Results: NOT to be written**_
 
@@ -335,10 +334,10 @@ _**Results: NOT to be written**_
 _**Needed functions: in package n2khabutils:**_
 
 - `filter_groundwater_sites(groundwater_sites, groundwater_joinedattributes, scheme, usefulness)`
-    - combines the spatial object returned by `qualify_groundwater_sites()` with a dataframe, returned by `spatialjoin_groundwater_sites()` and which provides type & type attributes, and restricts the result:
+    - combines the spatial object returned by `qualify_groundwater_sites()` with a dataframe (tibble), returned by `spatialjoin_groundwater_sites()` and which provides type & type attributes, and restricts the result:
         - according to the types and optional spatial restrictions as imposed by the specified MNE-`scheme`;
         - according to `usefulness` criteria, which could be given as a dataframe with the allowed minimum and maximum values of quality characteristics
-    - returns the shrinked forms of `groundwater_sites` _and_ `groundwater_joinedattributes`, as a GeoJSON file or shapefile (points) and a dataframe, respectively.
+    - returns the shrinked forms of `groundwater_sites` _and_ `groundwater_joinedattributes`, as a GeoJSON file or shapefile (points) and a dataframe (tibble), respectively.
     - _alternatively, define a function that encapsulates `qualify_groundwater_sites()` and `spatialjoin_groundwater_sites()` and applies the restriction._
 
 _**Dedicated writing workflow (scripts/Rmarkdown): in repo n2khab-mne-design**_
@@ -359,8 +358,8 @@ _**Needed functions: in package n2khabutils:**_
     - takes a spatial R object (polygons, line segments, points), makes a spatial join with `GRTSmaster_habitats` and returns a spatial R object with GRTS attributes added;
     - potentially involves an open GIS-backend;
     - for polygons and line segments, implements a point selection procedure to comply with MHQ selections.
-- `evaluation_grid(resolution)`
-    - i.e. a scaled up version (using `resolution`) of `GRTSmaster_habitats`
+- `write_highlevel_GRTSmh(resolution)`
+    - writes `highlevel_raster`, i.e. a scaled up version (using `resolution`) of `GRTSmaster_habitats`
 - `soiltexture_coarse()`
     - takes a vector with soil type codes (character of factor) and converts this into a factor with three coarse texture classes (fine / coarse / peat)
 
@@ -375,7 +374,7 @@ _**Results: NOT to be written**_
 
 _**Needed functions: in repo n2khab-mne-design:**_
 
-- `expected_sample_size(programme, scheme, evaluation_grid)`
+- `expected_sample_size(programme, scheme, highlevel_raster)`
 
 _**Results: NOT to be written**_
 
@@ -391,9 +390,11 @@ _**Results: NOT to be written**_
 To recall, `read_xxx()` functions typically return:
 
 - tidy formatted data (which may mean that a spatial dataset is to be kept separate from long-formatted attributes).
-    - While several `read_xxx()` functions refer to data that are more specific to n2khab-monitoring, other `read_xxx()` functions have broader interest. Therefore, place the latter (only) in the [inborutils](https://github.com/inbo/inborutils) package.
+    - While several `read_xxx()` functions refer to data that are more specific to n2khab projects, other `read_xxx()` functions have broader interest.
+    Therefore, place the latter (only) in the [inborutils](https://github.com/inbo/inborutils) package.
 - data with English variable names and labels of identifiers (such as types, pressures, ...)
-- omit unneeded variables for n2khab projects
+- [tibbles](https://r4ds.had.co.nz/tibbles.html) instead of dataframes
+- only the variables needed for n2khab projects
 
 So, depending on the data source, it may require more than a `read_vc()` or `st_read()` statement.
 
@@ -404,11 +405,17 @@ _**Needed functions: in package n2khabutils:**_
 - For reading input data:
     - `read_env_pressures(path, file)`
     - `read_schemes(path, file)`
-    - `read_types_per_scheme(path, file)`
+    - `read_scheme_types(path, file)`
     - `read_types(path, file)`
-    - `read_GRTSmaster_habitats(path, file)`
+    - `read_namelist(path, file)`
+        - this holds the names, corresponding to codes in other textual data sources (`types`, `env_pressures` etc.), supporting multiple languages.
+    - `read_GRTSmh(path, file)`
         - if this is not feasible within R, an open GIS-backend needs to be called by R
+    - `read_habitatmap(path, file)`
+        - returns spatial object and long (tidy) tibble
     - `read_habitatdune(path, file)`
+    - `read_habitatstreams(path, file)`
+    - `read_sac(path, file)`
     - `read_mhq_terrestrial_locs(path, file)`
     - `read_mhq_lentic_locs(path, file)`
     - `read_mhq_lotic_locs(path, file)`
@@ -434,13 +441,9 @@ _**Results: NOT to be written**_
 _**Needed functions: in inborutils package:**_
 
 - For reading input data:
-    - `read_habitatmap(path, file)`
-        - returns spatial object and long (tidy) dataframe
     - `read_watersurfaces(path, file)`
-    - `read_habitatstreams(path, file)`
     - `read_flanders(path, file)`
     - `read_provinces(path, file)`
-    - `read_sac(path, file)`
     - `read_biogeoregions(path, file)`
     - `read_ecoregions(path, file)`
     - `read_soilmap(path, file)`

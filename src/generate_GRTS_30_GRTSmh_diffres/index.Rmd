@@ -1,0 +1,62 @@
+---
+title: "Generating the derived data source GRTSmh_diffres from the GRTSmh_brick data source"
+# subtitle: "x"
+date: "`r lubridate::now()`"
+link-citations: true
+linkcolor: link.colour
+citecolor: link.colour
+urlcolor: link.colour
+geometry: margin=1in
+mainfont: "Calibri"
+fontsize: 11pt
+documentclass: "article"
+# csl: ../inbo.csl
+# bibliography: ../references.bib
+site: bookdown::bookdown_site
+output:
+  bookdown::html_document2:
+    keep_md: TRUE
+    number_sections: yes
+    fig_caption: yes
+    df_print: paged
+    toc: TRUE
+    toc_float:
+      collapsed: FALSE
+      smooth_scroll: FALSE
+    includes:
+        in_header: ../header.html
+  bookdown::pdf_document2:
+    fig_caption: yes
+    keep_tex: yes
+    toc: yes
+    toc_depth: 3
+    latex_engine: xelatex
+    number_sections: true
+    includes:
+        in_header: ../header.tex
+---
+
+```{r setup, include=FALSE}
+options(stringsAsFactors = FALSE,
+        scipen = 999, 
+        digits = 15)
+library(raster)
+library(tidyverse)
+library(stars)
+library(stringr)
+library(tmap)
+library(knitr)
+library(n2khabutils)
+opts_chunk$set(
+  echo = TRUE,
+  dpi = 300,
+  paged.print = FALSE
+)
+```
+
+**Note: this is a bookdown project, supposed to be run from within the `src/generate_GRTS_30_GRTSmh_diffres` subfolder. You can use the `generate_GRTS_30_GRTSmh_diffres.Rproj` RStudio project file in this subfolder to run it.**
+
+
+
+
+
