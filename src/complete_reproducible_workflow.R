@@ -13,6 +13,13 @@
 ## everything?
 ## !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! #
 
+
+# Generating the data folder inside this repository
+# -------------------------------------------------
+
+n2khabutils::filemanag_folders(root = "git")
+
+
 # Generating textdata files for the n2khabutils package
 # -----------------------------------------------------
 
@@ -25,7 +32,7 @@ setwd("src/generate_textdata")
 rmarkdown::render_site(output_format = 'bookdown::html_document2',
                        encoding = 'UTF-8')
 
-# Generating GeoTIFF files, derived from the GRTSmaster_habitats data source
+# Generating GeoTIFF and GPKG files, derived from the GRTSmaster_habitats data source
 # --------------------------------------------------------------------------
 
 # Be warned: this can take > 10 hours.
@@ -38,6 +45,17 @@ setwd("src/generate_GRTS_20_GRTSmh_brick")
 rmarkdown::render_site(output_format = 'bookdown::html_document2',
                        encoding = 'UTF-8')
 
+setwd("src/generate_GRTS_30_GRTSmh_diffres")
+rmarkdown::render_site(output_format = 'bookdown::html_document2',
+                       encoding = 'UTF-8')
+
+
+# Generating habitatmap_stdized
+# ------------------------------
+
+setwd("src/generate_habitatmap_stdized")
+rmarkdown::render_site(output_format = 'bookdown::html_document2',
+                       encoding = 'UTF-8')
 
 
 
