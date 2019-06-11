@@ -33,3 +33,14 @@ git2rdata::upgrade_data(path = "n2khabutils/inst/textdata")
     # "../../n2khabutils/inst/textdata/scheme_types"
     # ../../n2khabutils/inst/textdata/types.yml
     # "../../n2khabutils/inst/textdata/types"
+
+
+# 2019-06-11
+# -------------------------------------------------------------------
+# Previous state of git2rdata: commit df1ba32
+# Conversion to new state of git2rdata: commit 796ba98 (tag 0.0.5)
+
+git2rdata::upgrade_data(path = "src/generate_textdata/rawraw_data")
+git2rdata::upgrade_data(path = "n2khabutils/inst/textdata")
+git2rdata::upgrade_data(path = "src/generate_habitatmap_stdized/habmap_correction")
+
