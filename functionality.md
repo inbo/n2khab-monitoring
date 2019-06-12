@@ -24,7 +24,7 @@
 
 - data (pre)processing is to be reproducible, and is therefore defined by:
     - R-functions that aim at standardized data-reading, data-conversions etc., with arguments for undecided aspects that the user can set (including also, the directory of the dataset).
-    These R-functions are made available to the user through the `n2khabutils` package.
+    These R-functions are made available to the user through the `n2khab` package.
     - R-scripts or ideally, literate scripts (R markdown) that define the actual workflow (processing pipeline), including the chosen arguments of the functions
 - in some cases it can be useful to store (and version) the resulting dataset of a workflow as well (although it can be reproduced), especially if:
     - it is useful to offer immediate access to the resulting dataversion, e.g.:
@@ -251,7 +251,7 @@ Ideally, an intermediate spatial layer is generated that combines the above laye
 
 <DIV STYLE="background:#E8C3D58B;padding:10px">
 
-_**Needed functions: in package n2khabutils:**_
+_**Needed functions: in package n2khab:**_
 
 Both functions take into account type code consistency and link subtypes to main types. Both functions generate a data set consisting of both a spatial object and a long / tidy dataframe (tibble), including areal proportions.
 
@@ -281,7 +281,7 @@ Separate data next to the sampling frame are needed to restrict the spatial targ
     
 <DIV STYLE="background:#E8C3D58B;padding:10px">
 
-_**Needed functions: in package n2khabutils:**_
+_**Needed functions: in package n2khab:**_
 
 - `read_schemes(path, file)`
 - `read_scheme_types(path, file)`
@@ -331,7 +331,7 @@ _**Results: NOT to be written**_
 
 <DIV STYLE="background:#E8C3D58B;padding:10px">
 
-_**Needed functions: in package n2khabutils:**_
+_**Needed functions: in package n2khab:**_
 
 - `filter_groundwater_sites(groundwater_sites, groundwater_joinedattributes, scheme, usefulness)`
     - combines the spatial object returned by `qualify_groundwater_sites()` with a dataframe (tibble), returned by `spatialjoin_groundwater_sites()` and which provides type & type attributes, and restricts the result:
@@ -352,7 +352,7 @@ _**Results of the dedicated writing workflow: to be written into repo n2khab-mne
 
 <DIV STYLE="background:#E8C3D58B;padding:10px">
 
-_**Needed functions: in package n2khabutils:**_
+_**Needed functions: in package n2khab:**_
 
 - `spatialjoin_GRTS(object)`
     - takes a spatial R object (polygons, line segments, points), makes a spatial join with `GRTSmaster_habitats` and returns a spatial R object with GRTS attributes added;
@@ -400,7 +400,7 @@ So, depending on the data source, it may require more than a `read_vc()` or `st_
 
 <DIV STYLE="background:#E8C3D58B;padding:10px">
 
-_**Needed functions: in package n2khabutils:**_
+_**Needed functions: in package n2khab:**_
 
 - For reading input data:
     - `read_env_pressures(path, file)`
@@ -476,7 +476,7 @@ The following things are therefore needed  in each repo where data processing is
 
 <DIV STYLE="background:#E8C3D58B;padding:10px">
 
-_**Needed functions: in package n2khabutils**_
+_**Needed functions: in package n2khab**_
 
 - `check_inputdata(checksums, root, checksumdelay=14*24*3600)`
     - checks data presence, data version and integrity, cf. the functionality described [here](https://docs.google.com/spreadsheets/d/18U4AmiMnnApbgQTnfWbeZ3dAH3_4ISxUob_SX-maKV8/edit#gid=0&range=B74)
@@ -501,7 +501,7 @@ In order to allow for checks (see 3.2) and further metadata, definition of data 
 
 <DIV STYLE="background:#E8C3D58B;padding:10px">
 
-_**Needed functions: in package n2khabutils:**_
+_**Needed functions: in package n2khab:**_
 
 Functions that keep `datasources` and `dataversions` in sync with the mirror google sheet:
 

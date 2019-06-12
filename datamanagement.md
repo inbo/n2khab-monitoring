@@ -15,8 +15,8 @@ The aim is to avoid the need for everyone to download each separate dataset from
 
 To be able to reproduce workflows (scripts and Rmarkdown files) that reside in this and other n2khab-repositories, some conventions are needed:
 
-- data sources in **text-format (not too large)** are _versioned_ within the `n2khabutils` package:
-    - `n2khabutils/inst/textdata` contains text-format **reference data**.
+- data sources in **text-format (not too large)** are _versioned_ within the `n2khab` package:
+    - `n2khab/inst/textdata` contains text-format **reference data**.
     Some of them come over from another repository; others may be written as the result of a synchronization script to give them a start;
 - **binary** or **large** data sources are put in the folder `data`. The data are supposed to be divided as:
     - `data/10_raw`: local copies of binary/large inputdata versions are to be put here;
@@ -24,7 +24,7 @@ To be able to reproduce workflows (scripts and Rmarkdown files) that reside in t
     
     Each binary/large dataset is to be put in its *own subfolder* within one of the above folders.
 The name of the subfolder is a fixed code (ID) according to the aforementioned [list](https://docs.google.com/spreadsheets/d/1E8ERlfYwP3OjluL8d7_4rR1W34ka4LRCE35JTxf3WMI).
-As far as possible, the corresponding file(s) get the same name (this also holds for the text-format data in `n2khabutils`);
+As far as possible, the corresponding file(s) get the same name (this also holds for the text-format data in `n2khab`);
 - the workflows should use relative paths when referring to these data.
 
 Perhaps some binary datasets will receive a versioning system in the future, such as git LFS, if there is reason to suspect that the used versions will not be maintained in the source location in the long term.
