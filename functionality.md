@@ -20,7 +20,7 @@
       
 ## Functionality and good practices
 
-**Note: this document also applies to related n2khab repositories (mentioned below). [This picture](https://drive.google.com/open?id=1RQsjxch0YKdqJSPIDjCG_wEbYTlP3oDv) shows their relations.**
+**Note: this document also applies to related 'n2khab-' repositories (mentioned below). [This picture](https://drive.google.com/open?id=1RQsjxch0YKdqJSPIDjCG_wEbYTlP3oDv) shows their relations.**
 
 - data (pre)processing is to be reproducible, and is therefore defined by:
     - R-functions that aim at standardized data-reading, data-conversions etc., with arguments for undecided aspects that the user can set (including also, the directory of the dataset).
@@ -31,6 +31,8 @@
         - by other colleagues
         - to compare versions in time more easily
     - the workflow is computationally intensive
+    
+    In those cases, the workflow is stored and versioned in the [n2khab-preprocessing](https://github.com/inbo/n2khab-preprocessing) repository.
 - hence, the aim is to write easily usable functions to achieve the targeted results. A function can call other (helper) functions, therefore also high-level functions are to be made to enhance automatisation and reproducibility.
 - when contributing: please use `tidyverse`, `sf`, `raster` and `git2rdata` packages for data reading and processing.
 See the [README](README.md) file!
@@ -260,7 +262,7 @@ Both functions take into account type code consistency and link subtypes to main
 - `write_integrated_habitatmap(threshold_pct, outputdir)`
     - incorporates `write_terr_habitatmap()` but inserts the spatial units from `habitatstreams` and `watersurfaces` while retaining useful (type) attributes, ideally including those from `mhq_lentic_locs` and `mhq_lotic_locs`
 
-_**Dedicated writing workflow (scripts/Rmarkdown): in repo n2khab-inputs**_
+_**Dedicated writing workflow (scripts/Rmarkdown): in repo n2khab-preprocessing**_
 
 _**Results of the dedicated writing workflow: to be written into `data/20_processed`**_
 
@@ -467,7 +469,7 @@ _**Results: NOT to be written**_
 
 Workflows (in no matter which repo) will depend on the user that places data in the right location, and most of all: _the **right** data_ in the right location.
 
-The following things are therefore needed  in each repo where data processing is done (analysis repositories and _n2khab-inputs_):
+The following things are therefore needed  in each repo where data processing is done (analysis repositories and _n2khab-preprocessing_):
 
 - `datalist_chosen`: a tabular file that clearly defines which data sources and versions thereof are needed (the file is versioned in the respective repo)
 - functionality regarding the definition of data sources and data versions (see 3.3)
@@ -484,7 +486,7 @@ _**Needed functions: in package n2khab**_
     - it checks the current metadata against the metadata file and it checks the checksum against the checksum in the `checksums` dataframe, which is to be generated from `datalist_chosen`, `dataversions` and `datasources`
     - it reports to the user
 
-_**Dedicated workflow (scripts/Rmarkdown): in repo n2khab-inputs plus other repos with data processing**_
+_**Dedicated workflow (scripts/Rmarkdown): in repo n2khab-preprocessing plus other repos with data processing**_
 
 _**Results: NOT to be written**_
 
@@ -496,7 +498,7 @@ _**Results: NOT to be written**_
 In order to allow for checks (see 3.2) and further metadata, definition of data is needed:
 
 - `datasources`: tabular file that defines data sources (mirrors worksheet 'data sources' in [this googlesheet](https://docs.google.com/spreadsheets/d/1E8ERlfYwP3OjluL8d7_4rR1W34ka4LRCE35JTxf3WMI/edit#gid=0)): attributes like ID, n2khab-repo, data owner, authorative source location, relative local path where data is to be expected.
-- `dataversions` (in _n2khab-inputs_): tabular file that defines data versions (mirrors worksheet 'data source versions in [this googlesheet](https://docs.google.com/spreadsheets/d/1E8ERlfYwP3OjluL8d7_4rR1W34ka4LRCE35JTxf3WMI/edit#gid=1017627684)): attributes like sourceID, versionID, authorative source location, fileserver data path, **filename**, **checksum**.
+- `dataversions`: tabular file that defines data versions (mirrors worksheet 'data source versions in [this googlesheet](https://docs.google.com/spreadsheets/d/1E8ERlfYwP3OjluL8d7_4rR1W34ka4LRCE35JTxf3WMI/edit#gid=1017627684)): attributes like sourceID, versionID, authorative source location, fileserver data path, **filename**, **checksum**.
 - a housekeeping workflow that updates `datasources` and `dataversions`, and which should be run on a regular basis
 
 <DIV STYLE="background:#E8C3D58B;padding:10px">
@@ -508,9 +510,9 @@ Functions that keep `datasources` and `dataversions` in sync with the mirror goo
 - `write_datasources(outputdir)`
 - `write_dataversions(outputdir)`
     
-_**Dedicated writing workflow (scripts/Rmarkdown): in repo n2khab-inputs**_
+_**Dedicated writing workflow (scripts/Rmarkdown): in repo n2khab**_
 
-_**Results of the dedicated writing workflow: to be written into repo n2khab-inputs**_
+_**Results of the dedicated writing workflow: to be written into repo n2khab**_
 
 </DIV>
 
