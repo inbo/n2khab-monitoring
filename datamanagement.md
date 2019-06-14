@@ -22,7 +22,7 @@ This folder can occur in every separate N2KHAB project repository (not necessari
 See also the relation with the advice in the data-storage vignette of the `n2khab` package, *avoiding the hard-coding of the path to the `data` folder* in a shared workflow: `vignette("vign-020_datastorage", package = "n2khab")`.
 The data are supposed to be divided as:
     - `data/10_raw`: local copies of binary/large inputdata versions are to be put here;
-    - `data/20_processed`: generated binary/large data are put here by scripts.
+    - `data/20_processed`: generated binary/large data are put here.
     
     Each binary/large dataset is to be put in its *own subfolder* within one of the above folders.
 The name of the subfolder is a fixed code (ID) according to the aforementioned [list](https://docs.google.com/spreadsheets/d/1E8ERlfYwP3OjluL8d7_4rR1W34ka4LRCE35JTxf3WMI).
