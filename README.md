@@ -5,7 +5,7 @@ Hence it is the **starting point** to find your way through these repositories.
 Some repositories (especially [n2khab](https://github.com/inbo/n2khab) and [n2khab-preprocessing](https://github.com/inbo/n2khab-preprocessing)) have a much broader scope,
 as they also support other _N2KHAB_ projects, i.e. projects that focus on Natura 2000 habitat _in some way_ (and which may as well use the _n2khab_-prefix for their git repository name).
 
-On the GitHub website of this repo, **centralized task planning** is that relates to the other repositories, typically in the context of monitoring.
+On the GitHub website of this repo, **centralized task planning** is done that relates to the other repositories, typically in the context of monitoring.
 This is done in the form of issues, most of which are visualized in the 'Tasks' project.
 
 The related repositories are set up with a special interest in _reproducible_ and _transparent_ design, review and analysis of Natura 2000 habitat monitoring programmes at the Flemish scale (each is a combination of multiple monitoring schemes):
