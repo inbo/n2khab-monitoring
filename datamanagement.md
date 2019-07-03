@@ -19,7 +19,7 @@ To be able to reproduce workflows (scripts and Rmarkdown files) of n2khab-reposi
 - **other** data sources in **text-format (not too large)** that are merely needed in a specific data-preprocessing workflow, are _versioned_ inside the `src` folder of the [n2khab-preprocessing](https://github.com/inbo/n2khab-preprocessing) repository, i.e. in the specific subfolder with the preprocessing steps;
 - **binary** or **large** data sources are put in a _git-ignored_ folder `data`.
 This folder can occur in every separate N2KHAB project repository (not necessarily with the same data sources or the versions thereoff), or be put in a more central place and referred in a relative way.
-See also the relation with the advice in the data-storage vignette of the `n2khab` package, *avoiding the hard-coding of the path to the `data` folder* in a shared workflow: `vignette("vign-020_datastorage", package = "n2khab")`.
+See also the relation with the advice in the data-storage vignette of the `n2khab` package, *avoiding the hard-coding of the path to the `data` folder* in a shared workflow: `vignette("v020_datastorage", package = "n2khab")`.
 The data are supposed to be divided as:
     - `data/10_raw`: local copies of binary/large inputdata versions are to be put here;
     - `data/20_processed`: generated binary/large data are put here.
