@@ -114,8 +114,8 @@ The 'base' sampling frame needs input data in order to provide the following att
 
 - spatial unit definition (ID, spatial attributes): derived from:
     - `GRTSmaster_habitats`
-    - `terr_habitatmap`
-    - `integrated_habitatmap`
+    - `habitatmap_terr`
+    - `habitatmap_integrated`
     - `mhq_terrestrial_locs`
     - `mhq_lentic_locs`
     - `mhq_lotic_locs`
@@ -129,7 +129,7 @@ The 'base' sampling frame needs input data in order to provide the following att
     - algorithms to join the `GRTSmaster_habitats` ranking number to spatial units (of terrestrial, lotic, lentic types respectively)
     
 In practice, it is possible to build up the base sampling frame in steps, i.e. according to the needs.
-E.g., the addition of `integrated_habitatmap` (which combines `terr_habitatmap` with `watersurfaces`, `habitatstreams`) can also be postponed.
+E.g., the addition of `habitatmap_integrated` (which combines `habitatmap_terr` with `watersurfaces`, `habitatstreams`) can also be postponed.
     
     
 <DIV STYLE="background:#E8C3D58B;padding:10px">
@@ -257,10 +257,10 @@ _**Needed functions: in package n2khab:**_
 
 Both functions take into account type code consistency and link subtypes to main types. Both functions generate a data set consisting of both a spatial object and a long / tidy dataframe (tibble), including areal proportions.
 
-- `write_terr_habitatmap(threshold_pct, outputdir)`
+- `write_habitatmap_terr(threshold_pct, outputdir)`
     - this function reads and integrates `habitatmap` and `habitatdune`
-- `write_integrated_habitatmap(threshold_pct, outputdir)`
-    - incorporates `write_terr_habitatmap()` but inserts the spatial units from `habitatstreams` and `watersurfaces` while retaining useful (type) attributes, ideally including those from `mhq_lentic_locs` and `mhq_lotic_locs`
+- `write_habitatmap_integrated(threshold_pct, outputdir)`
+    - incorporates `write_habitatmap_terr()` but inserts the spatial units from `habitatstreams` and `watersurfaces` while retaining useful (type) attributes, ideally including those from `mhq_lentic_locs` and `mhq_lotic_locs`
 
 _**Dedicated writing workflow (scripts/Rmarkdown): in repo n2khab-preprocessing**_
 
@@ -322,7 +322,7 @@ _**Needed functions: in repo inborutils:**_
         - last hydrological year of the useful XG3 data series
     - the function returns a spatial object (hereafter named `groundwater_sites`) with the quality criteria, and with the piezometer IDs and coordinates
 - `spatialjoin_groundwater_sites(object, topological_criterion, groundwater_sites)`
-    - takes a spatial R object (e.g. `soilmap`, `terr_habitatmap`, `integrated_habitatmap`) and uses a `topological_criterion` (e.g. intersect with buffer around piezometers with radius x) to make a spatial join with a spatial object `groundwater_sites` as returned by `qualify_groundwater_sites()`
+    - takes a spatial R object (e.g. `soilmap`, `habitatmap_terr`, `habitatmap_integrated`) and uses a `topological_criterion` (e.g. intersect with buffer around piezometers with radius x) to make a spatial join with a spatial object `groundwater_sites` as returned by `qualify_groundwater_sites()`
     - returns a tidy dataframe (tibble) (hereafter named `groundwater_joinedattributes`) with piezometer IDs and the joined attributes (as buffers may be used, a long format is necessary)
 
 _**Results: NOT to be written**_
@@ -423,10 +423,10 @@ _**Needed functions: in package n2khab:**_
     - `read_mhq_lotic_locs(path, file)`
         
 - In some cases, for reading generated data:
-    - `read_terr_habitatmap(path, file)`
-        - loads the R objects, returned by `write_terr_habitatmap()`
-    - `read_integrated_habitatmap(path, file)`
-        - loads the R objects, returned by `write_integrated_habitatmap()`
+    - `read_habitatmap_terr(path, file)`
+        - loads the R objects, returned by `write_habitatmap_terr()`
+    - `read_habitatmap_integrated(path, file)`
+        - loads the R objects, returned by `write_habitatmap_integrated()`
     - `read_samplingframe(path, file)`
         - loads the R object, returned by `write_samplingframe()`
     - `read_base_samplingframe(path, file)`
