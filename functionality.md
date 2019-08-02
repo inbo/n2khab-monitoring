@@ -114,8 +114,8 @@ The 'base' sampling frame needs input data in order to provide the following att
 
 - spatial unit definition (ID, spatial attributes): derived from:
     - `GRTSmaster_habitats`
-    - `terr_habitatmap`
-    - `integrated_habitatmap`
+    - `habitatmap_terr`
+    - `habitatmap_integrated`
     - `mhq_terrestrial_locs`
     - `mhq_lentic_locs`
     - `mhq_lotic_locs`
@@ -129,7 +129,7 @@ The 'base' sampling frame needs input data in order to provide the following att
     - algorithms to join the `GRTSmaster_habitats` ranking number to spatial units (of terrestrial, lotic, lentic types respectively)
     
 In practice, it is possible to build up the base sampling frame in steps, i.e. according to the needs.
-E.g., the addition of `integrated_habitatmap` (which combines `terr_habitatmap` with `watersurfaces`, `habitatstreams`) can also be postponed.
+E.g., the addition of `habitatmap_integrated` (which combines `habitatmap_terr` with `watersurfaces`, `habitatstreams`) can also be postponed.
     
     
 <DIV STYLE="background:#E8C3D58B;padding:10px">
@@ -244,9 +244,10 @@ Depending on the purpose, the type-attribute is to be derived from one or more o
 
 Moreover, it is brought in consistency, and restricted to the type codes from the datasource `types`.
 
-Also, main types need to be linked to their corresponding _subtypes_ in order to be picked up when selections are defined at the subtype level (needed when no subtype information exists for a given spatial object).
+A processed layer `habitatmap_stdized` is constructed to standardise the format of `habitatmap`:
 
-Further, extra attributes are needed in most applications -- especially when using the `habitatmap` dataset: the rank and the associated areal proportion of each row.
+- main types need to be linked to their corresponding _subtypes_ in order to be picked up when selections are defined at the subtype level (needed when no subtype information exists for a given spatial object).
+- extra attributes are needed in most applications: the rank and the associated areal proportion of each row.
 
 Ideally, an intermediate spatial layer is generated that combines the above layers and integrates their information.
 
@@ -255,12 +256,15 @@ Ideally, an intermediate spatial layer is generated that combines the above laye
 
 _**Needed functions: in package n2khab:**_
 
-Both functions take into account type code consistency and link subtypes to main types. Both functions generate a data set consisting of both a spatial object and a long / tidy dataframe (tibble), including areal proportions.
+The functions take into account type code consistency and link subtypes to main types. Most functions return a data set consisting of both a spatial object and a long / tidy dataframe (tibble), including areal proportions.
 
-- `write_terr_habitatmap(threshold_pct, outputdir)`
-    - this function reads and integrates `habitatmap` and `habitatdune`
-- `write_integrated_habitatmap(threshold_pct, outputdir)`
-    - incorporates `write_terr_habitatmap()` but inserts the spatial units from `habitatstreams` and `watersurfaces` while retaining useful (type) attributes, ideally including those from `mhq_lentic_locs` and `mhq_lotic_locs`
+- `read_habitatmap_stdized(path, file)`
+    - returns spatial object and long (tidy) tibble based on `habitatmap`
+- `read_habitatmap_terr(path, file)`
+    - returns `habitatmap_terr`: this integrates the terrestrial locations of `habitatmap_stdized` (but excluding those with very low certainty of containing habitat or RIB), `habitatdune` and `mhq_terrestrial_locs` and adds further interpretation (especially: translating some main type codes into a specific subtype).
+- `expand_types()`: takes a type column in a dataframe and expands it, based on relationships between main types and subtypes, in order to optimize joins with `habitatmap_terr`.
+- `read_habitatmap_integrated(path, file)`
+    - returns `habitatmap_integrated`: based on `habitatmap_terr`; inserts the spatial units from `habitatstreams` and `watersurfaces_interpr` while retaining useful (type) attributes, ideally including those from `mhq_lentic_locs` and `mhq_lotic_locs`
 
 _**Dedicated writing workflow (scripts/Rmarkdown): in repo n2khab-preprocessing**_
 
@@ -322,7 +326,7 @@ _**Needed functions: in repo inborutils:**_
         - last hydrological year of the useful XG3 data series
     - the function returns a spatial object (hereafter named `groundwater_sites`) with the quality criteria, and with the piezometer IDs and coordinates
 - `spatialjoin_groundwater_sites(object, topological_criterion, groundwater_sites)`
-    - takes a spatial R object (e.g. `soilmap`, `terr_habitatmap`, `integrated_habitatmap`) and uses a `topological_criterion` (e.g. intersect with buffer around piezometers with radius x) to make a spatial join with a spatial object `groundwater_sites` as returned by `qualify_groundwater_sites()`
+    - takes a spatial R object (e.g. `soilmap`, `habitatmap_terr`, `habitatmap_integrated`) and uses a `topological_criterion` (e.g. intersect with buffer around piezometers with radius x) to make a spatial join with a spatial object `groundwater_sites` as returned by `qualify_groundwater_sites()`
     - returns a tidy dataframe (tibble) (hereafter named `groundwater_joinedattributes`) with piezometer IDs and the joined attributes (as buffers may be used, a long format is necessary)
 
 _**Results: NOT to be written**_
@@ -413,8 +417,6 @@ _**Needed functions: in package n2khab:**_
         - this holds the names, corresponding to codes in other textual data sources (`types`, `env_pressures` etc.), supporting multiple languages.
     - `read_GRTSmh(path, file)`
         - if this is not feasible within R, an open GIS-backend needs to be called by R
-    - `read_habitatmap(path, file)`
-        - returns spatial object and long (tidy) tibble
     - `read_habitatdune(path, file)`
     - `read_habitatstreams(path, file)`
     - `read_sac(path, file)`
@@ -423,10 +425,10 @@ _**Needed functions: in package n2khab:**_
     - `read_mhq_lotic_locs(path, file)`
         
 - In some cases, for reading generated data:
-    - `read_terr_habitatmap(path, file)`
-        - loads the R objects, returned by `write_terr_habitatmap()`
-    - `read_integrated_habitatmap(path, file)`
-        - loads the R objects, returned by `write_integrated_habitatmap()`
+    - `read_habitatmap_terr(path, file)`
+        - loads the R objects, returned by `write_habitatmap_terr()`
+    - `read_habitatmap_integrated(path, file)`
+        - loads the R objects, returned by `write_habitatmap_integrated()`
     - `read_samplingframe(path, file)`
         - loads the R object, returned by `write_samplingframe()`
     - `read_base_samplingframe(path, file)`
