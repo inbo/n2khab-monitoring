@@ -27,9 +27,14 @@ Some summarizing schemes (in English):
 - relationships between possible, future [repositories](https://drive.google.com/open?id=1RQsjxch0YKdqJSPIDjCG_wEbYTlP3oDv);
 - data storage and versioning [workflows](https://drive.google.com/open?id=1xZz9f9n8zSUxBJvW6WEFLyDK7Ya0u4iN).
 
-More specific overviews are given in:
+You should definitely have a look at the distribution and setup of standard data sources for N2KHAB projects:
 
-- the [document](datamanagement.md) on data management;
+```r
+vignette("v020_datastorage", package = "n2khab")
+```
+
+Specific overviews are given in:
+
 - [list (under construction)](https://docs.google.com/spreadsheets/d/1E8ERlfYwP3OjluL8d7_4rR1W34ka4LRCE35JTxf3WMI) with metadata of dataset versions and their source location
 - the [document](functionality.md) on intended functionality, especially functions of the `n2khab` R package and related repositories;
 - the [draft overview of functions per repository](https://docs.google.com/spreadsheets/d/18U4AmiMnnApbgQTnfWbeZ3dAH3_4ISxUob_SX-maKV8/edit#gid=924567109).
