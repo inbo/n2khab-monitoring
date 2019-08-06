@@ -39,7 +39,7 @@ Specific overviews are given in:
 - the [document](functionality.md) on intended functionality, especially functions of the `n2khab` R package and related repositories;
 - the [draft overview of functions per repository](https://docs.google.com/spreadsheets/d/18U4AmiMnnApbgQTnfWbeZ3dAH3_4ISxUob_SX-maKV8/edit#gid=924567109).
 
-Short description of the _currently existing_ 'n2khab-' repositories:
+Short description of the _currently existing_ repositories related to Flemish Natura 2000 habitat monitoring:
 
 - **[n2khab](https://github.com/inbo/n2khab)**: R package that provides data definitions, standard checklists and preprocessing functions.
 Its scope is N2KHAB projects.
