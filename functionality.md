@@ -203,7 +203,7 @@ I.e. including model-assisted inference.
     Examples include:
     - `soilmap`
     - `ecoregions`
-- domain population totals for more efficient domain estimation (i.e. subpopulation estimation through poststratification)
+- domain population sizes for more efficient domain estimation (i.e. subpopulation estimation through poststratification)
 
 <DIV STYLE="background:#E8C3D58B;padding:10px">
 
