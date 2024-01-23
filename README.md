@@ -49,6 +49,9 @@ Several functions return preprocessed datasets (see `n2khab-preprocessing`) as s
 - **[n2khab-samplingframes](https://github.com/inbo/n2khab-samplingframes)**: sampling frames and code to reproduce or update these.
 - **[n2khab-mne-design](https://github.com/inbo/n2khab-mne-design)**: design of the Flemish monitoring programme for the natural environment (MNE).
 - **[n2khab-sample-admin](https://github.com/inbo/n2khab-sample-admin)**: sample management and associated code.
+- **[n2khab-mhq-design](https://github.com/inbo/n2khab-mhq-design)**: design of the Flemish monitoring programme for the biotic habitat quality (MHQ).
+- **[n2khab-mhq-data](https://github.com/inbo/n2khab-mhq-data)**: read fieldwork data collected in MHQ.
+- **[n2khab-mhq-report](https://github.com/inbo/n2khab-mhq-report)**: report with evaluation of MHQ.
 
 
 
