@@ -16,7 +16,12 @@ library(stringr)
 library(forcats)
 library(lubridate)
 
+# id of the planning googlesheet ------------------------------------------
+
 gs_id <- "1HLtyGK_csi5W_v7XChxgTuVjS-RKXqc0Jxos1RBqpwk"
+
+
+# read the planning data --------------------------------------------------
 
 df <- read_sheet(
   ss = gs_id,
@@ -24,6 +29,9 @@ df <- read_sheet(
   col_types = "ccccllliccccdddddddddddccdddddddddddcc",
   .name_repair = "minimal"
 )
+
+
+# clean planning data and turn it into long format ------------------------
 
 df_long <-
   df |>
@@ -103,6 +111,9 @@ summarize_planning <- function(x,
       names_sort = TRUE
     )
 }
+
+
+# using the top level summarizing function --------------------------------
 
 # for checking (use temporary view to filter non-continuous tasks in gsheet):
 summarize_planning(
