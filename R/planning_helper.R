@@ -104,7 +104,7 @@ summarize_planning_long <- function(x,
       # generieke_omschrijving == "Aanwervingen"
     ) |>
     summarize(
-      days = sum(nr_days),
+      days = sum(nr_days) |> round(2),
       .by = c(person, {{tempres}})
     ) |>
     arrange(person, {{tempres}})
