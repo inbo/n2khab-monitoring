@@ -114,5 +114,11 @@ summarize_planning(
 )
 
 summarize_planning(df_long, priorities = 1) |>
-    write_sheet(ss = gs_id, sheet = "priority_1")
+  write_sheet(ss = gs_id, sheet = "priority_1")
+summarize_planning(df_long, priorities = 1, tempres = "y") |>
+  write_sheet(ss = gs_id, sheet = "priority_1_year")
+summarize_planning(df_long, priorities = 1:2) |>
+  write_sheet(ss = gs_id, sheet = "priority_1_2")
+summarize_planning(df_long, priorities = 1:3) |>
+  write_sheet(ss = gs_id, sheet = "priority_1_2_3")
 
