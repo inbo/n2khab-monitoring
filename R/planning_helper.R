@@ -15,6 +15,8 @@ library(janitor)
 library(stringr)
 library(forcats)
 library(lubridate)
+library(purrr)
+
 
 # id of the planning googlesheet ------------------------------------------
 
@@ -152,6 +154,45 @@ summarize_planning(df_long, priorities = 1:2) |>
 summarize_planning(df_long, priorities = 1:5) |>
   write_sheet(ss = gs_id, sheet = "priority_1:5")
 
+# create data frames with planning per person -----------------------------
+
+max_year <- 2025
+
+df_long |>
+  filter(year(date) <= max_year) |>
+  pivot_wider(
+    names_from = task_type,
+    values_from = nr_days,
+    values_fill = 0
+  ) |>
+  nest(data = -person) |>
+  (function(x) {
+    walk2(x$person, x$data, function(name, df) {
+      df |>
+        mutate(
+          task_days = str_c(
+            round(uitvoering, 1),
+            "+",
+            round(review, 1),
+            "=",
+            round(uitvoering + review, 1)
+          )
+        ) |>
+        arrange(start, deadline) |>
+        select(-c(
+          statistisch:automatisatie,
+          continuous,
+          date,
+          uitvoering,
+          review
+        )) |>
+        pivot_wider(
+          names_from = y_month,
+          values_from = task_days
+        ) |>
+        write_sheet(ss = gs_id, sheet = str_c(as.character(name), "_planning"))
+    })
+  })()
 
 
 # read availability data and turn into long format ------------------------
