@@ -45,7 +45,9 @@ df_long <-
   ) |>
   rename_with(
     .cols = karen:datamanager,
-    .fn = \(x) {str_c(x, "_1")}
+    .fn = \(x) {
+      str_c(x, "_1")
+    }
   ) |>
   mutate(
     continuous = deadline == "Doorlopend",
@@ -105,9 +107,9 @@ summarize_planning_long <- function(x,
     ) |>
     summarize(
       days = sum(nr_days) |> round(2),
-      .by = c(person, {{tempres}})
+      .by = c(person, {{ tempres }})
     ) |>
-    arrange(person, {{tempres}})
+    arrange(person, {{ tempres }})
 }
 
 summarize_planning <- function(x,
