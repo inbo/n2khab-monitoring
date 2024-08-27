@@ -86,11 +86,14 @@ df_long <-
   ) |>
   select(-nr_months)
 
-summarize_planning <- function(x,
-                               priorities = 1,
-                               max_year = 2025,
-                               tempres = c("y_month", "y"),
-                               include_continuous = TRUE) {
+
+# functions ---------------------------------------------------------------
+
+summarize_planning_long <- function(x,
+                                    priorities = 1,
+                                    max_year = 2025,
+                                    tempres = c("y_month", "y"),
+                                    include_continuous = TRUE) {
   tempres <- if (!is.null(tempres)) (match.arg(tempres))
   x |>
     mutate(y = year(date)) |>
@@ -104,7 +107,21 @@ summarize_planning <- function(x,
       days = sum(nr_days),
       .by = c(person, {{tempres}})
     ) |>
-    arrange(person, {{tempres}}) |>
+    arrange(person, {{tempres}})
+}
+
+summarize_planning <- function(x,
+                               priorities = 1,
+                               max_year = 2025,
+                               tempres = c("y_month", "y"),
+                               include_continuous = TRUE) {
+  summarize_planning_long(
+    x = x,
+    priorities = priorities,
+    max_year = max_year,
+    tempres = tempres,
+    include_continuous = include_continuous
+  ) |>
     pivot_wider(
       names_from = person,
       values_from = days,
