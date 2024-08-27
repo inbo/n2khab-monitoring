@@ -151,3 +151,58 @@ summarize_planning(df_long, priorities = 1:5) |>
   write_sheet(ss = gs_id, sheet = "priority_1:5")
 
 
+
+# read availability data and turn into long format ------------------------
+
+avail <- read_sheet(
+  ss = gs_id,
+  sheet = "Beschikbaarheid"
+)
+
+avail_long <-
+  avail |>
+  mutate(y_month = factor(y_month)) |>
+  select(y_month, ends_with("_mnm"), mo_gw:datamanager) |>
+  rename_with(
+    .cols = ends_with("_mnm"),
+    .fn = \(x) str_remove(x, "_mnm$")
+  ) |>
+  pivot_longer(
+    -y_month,
+    names_to = "person",
+    values_to = "days_avail"
+  ) |>
+  mutate(person = fct(person))
+
+
+# function to return number of days left per person x month ---------------
+
+#' Summarize planning table by returning number of days left per person & month
+#'
+#' @param x Long format of planning data.
+#' @param y Long format of person availability data.
+summarize_days_left <- function(x,
+                                y,
+                                priorities = 1) {
+  x |>
+    summarize_planning_long(priorities = priorities) |>
+    inner_join(
+      y,
+      join_by(y_month, person),
+      relationship = "many-to-one",
+      unmatched = "drop"
+    ) |>
+    mutate(days_left = round(days_avail - days, 2)) |>
+    pivot_wider(
+      id_cols = y_month,
+      names_from = person,
+      values_from = days_left,
+      names_sort = TRUE
+    )
+}
+
+
+# apply function to return number of days left (person x month) -----------
+
+summarize_days_left(df_long, avail_long, priorities = 1) |>
+  write_sheet(ss = gs_id, sheet = "priority_1_avail")
