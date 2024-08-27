@@ -135,7 +135,7 @@ summarize_planning <- function(x,
 # for checking (use temporary view to filter non-continuous tasks in gsheet):
 summarize_planning(
   df_long,
-  priorities = 1:3,
+  priorities = 1:5,
   tempres = NULL,
   include_continuous = FALSE,
   max_year = 2028
@@ -146,7 +146,8 @@ summarize_planning(df_long, priorities = 1) |>
 summarize_planning(df_long, priorities = 1, tempres = "y") |>
   write_sheet(ss = gs_id, sheet = "priority_1_year")
 summarize_planning(df_long, priorities = 1:2) |>
-  write_sheet(ss = gs_id, sheet = "priority_1_2")
-summarize_planning(df_long, priorities = 1:3) |>
-  write_sheet(ss = gs_id, sheet = "priority_1_2_3")
+  write_sheet(ss = gs_id, sheet = "priority_1:2")
+summarize_planning(df_long, priorities = 1:5) |>
+  write_sheet(ss = gs_id, sheet = "priority_1:5")
+
 
