@@ -222,9 +222,13 @@ get_availability_long <- function(ss = gs_id()) {
 #' @inheritParams summarize_planning
 summarize_days_left <- function(planning_long,
                                 availability_long,
-                                priorities = 1) {
+                                priorities = 1,
+                                max_year = max_y()) {
   planning_long |>
-    summarize_planning_long(priorities = priorities) |>
+    summarize_planning_long(
+      priorities = priorities,
+      max_year = max_year
+    ) |>
     inner_join(
       availability_long,
       join_by(y_month, person),
@@ -245,7 +249,12 @@ summarize_days_left <- function(planning_long,
 update_priority_1_avail_sheet <- function(planning_long,
                                           availability_long,
                                           ss = gs_id()) {
-  summarize_days_left(planning_long, availability_long, priorities = 1) |>
+  summarize_days_left(
+    planning_long,
+    availability_long,
+    priorities = 1,
+    max_year = max_y()
+  ) |>
     write_sheet(ss = ss, sheet = "priority_1_avail")
 }
 
