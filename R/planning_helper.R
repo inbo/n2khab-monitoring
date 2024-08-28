@@ -27,6 +27,8 @@ max_year <- function() 2025
 
 #' Generate a long-format planning table from the Planning_v2 sheet in the
 #' planning googlesheet.
+#'
+#' @param ss The id of the planning googlesheet
 get_planning_long <- function(ss) {
   # read the planning data
   read_sheet(
@@ -120,7 +122,7 @@ summarize_planning_long <- function(x,
 #' @param planning_long Long format of planning data.
 #' @param priorities Numeric vector of priorities, used to filter the
 #' 'prioriteit' column in x.
-#' @param max_year Number; the maximum allowed year from x.
+#' @param max_year Number; the maximum allowed year from planning_long.
 #' @param tempres String. Temporal resolution of the result.
 #' @param include_continuous Logical.
 #' Should continuous tasks be included?
@@ -161,6 +163,9 @@ summarize_planning(
 )
 
 #' Update the priority_xxx sheets in the planning googlesheet
+#'
+#' @inheritParams get_planning_long
+#' @inheritParams summarize_planning
 update_priority_sheets <- function(planning_long, ss = gs_id()) {
   summarize_planning(planning_long, priorities = 1) |>
     write_sheet(ss = ss, sheet = "priority_1")
@@ -220,6 +225,8 @@ df_long |>
 
 #' Generate a long-format planning table from the Planning_v2 sheet in the
 #' planning googlesheet.
+#'
+#' @inheritParams get_planning_long
 get_availability_long <- function(ss = gs_id()) {
   read_sheet(
     ss = ss,
