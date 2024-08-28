@@ -93,19 +93,19 @@ df_long <-
 
 # functions ---------------------------------------------------------------
 
+#' @keywords internal
 summarize_planning_long <- function(x,
-                                    priorities = 1,
-                                    max_year = 2025,
-                                    tempres = c("y_month", "y"),
-                                    include_continuous = TRUE) {
+                                    priorities,
+                                    max_year,
+                                    tempres,
+                                    include_continuous) {
   tempres <- if (!is.null(tempres)) (match.arg(tempres))
   x |>
     mutate(y = year(date)) |>
     filter(
       prioriteit %in% priorities,
       y <= max_year,
-      include_continuous | !continuous,
-      # generieke_omschrijving == "Aanwervingen"
+      include_continuous | !continuous
     ) |>
     summarize(
       days = sum(nr_days) |> round(2),
@@ -114,6 +114,17 @@ summarize_planning_long <- function(x,
     arrange(person, {{ tempres }})
 }
 
+#' Summarize planning (days occupied) by person and by month or year
+#'
+#' @param x Long format of planning data.
+#' @param priorities Numeric vector of priorities, used to filter the
+#' 'prioriteit' column in x.
+#' @param max_year Number; the maximum allowed year from x.
+#' @param tempres String. Temporal resolution of the result.
+#' @param include_continuous Logical.
+#' Should continuous tasks be included?
+#' Defaults to `TRUE`; value `FALSE` can be useful in manual checks or
+#' debugging.
 summarize_planning <- function(x,
                                priorities = 1,
                                max_year = 2025,
@@ -222,8 +233,8 @@ avail_long <-
 
 #' Summarize planning table by returning number of days left per person & month
 #'
-#' @param x Long format of planning data.
 #' @param y Long format of person availability data.
+#' @inheritParams summarize_planning
 summarize_days_left <- function(x,
                                 y,
                                 priorities = 1) {
