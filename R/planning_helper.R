@@ -162,6 +162,9 @@ summarize_planning(
   max_year = 2028
 )
 
+# functions ---------------------------------------------------------------
+
+
 #' Update the priority_xxx sheets in the planning googlesheet
 #'
 #' @inheritParams get_planning_long
@@ -178,49 +181,50 @@ update_priority_sheets <- function(planning_long, ss = gs_id()) {
 }
 
 
-# create data frames with planning per person -----------------------------
-
-max_year <- 2025
-
-df_long |>
-  filter(year(date) <= max_year) |>
-  pivot_wider(
-    names_from = task_type,
-    values_from = nr_days,
-    values_fill = 0
-  ) |>
-  nest(data = -person) |>
-  (function(x) {
-    walk2(x$person, x$data, function(name, df) {
-      df |>
-        mutate(
-          task_days = str_c(
-            round(uitvoering, 1),
-            "+",
-            round(review, 1),
-            "=",
-            round(uitvoering + review, 1)
-          )
-        ) |>
-        arrange(start, deadline) |>
-        select(-c(
-          statistisch:automatisatie,
-          continuous,
-          date,
-          uitvoering,
-          review
-        )) |>
-        pivot_wider(
-          names_from = y_month,
-          values_from = task_days
-        ) |>
-        write_sheet(ss = gs_id(), sheet = str_c(as.character(name), "_planning"))
-    })
-  })()
-
-
-
-# functions ---------------------------------------------------------------
+#' Generate and update the reordered planning tables per person in the planning
+#' googlesheet
+#'
+#' @inheritParams get_planning_long
+#' @inheritParams summarize_planning
+update_person_sheets <- function(planning_long,
+                                 ss = gs_id(),
+                                 max_year = max_year()) {
+  planning_long |>
+    filter(year(date) <= max_year) |>
+    pivot_wider(
+      names_from = task_type,
+      values_from = nr_days,
+      values_fill = 0
+    ) |>
+    nest(data = -person) |>
+    (function(x) {
+      walk2(x$person, x$data, function(name, df) {
+        df |>
+          mutate(
+            task_days = str_c(
+              round(uitvoering, 1),
+              "+",
+              round(review, 1),
+              "=",
+              round(uitvoering + review, 1)
+            )
+          ) |>
+          arrange(start, deadline) |>
+          select(-c(
+            statistisch:automatisatie,
+            continuous,
+            date,
+            uitvoering,
+            review
+          )) |>
+          pivot_wider(
+            names_from = y_month,
+            values_from = task_days
+          ) |>
+          write_sheet(ss = ss, sheet = str_c(as.character(name), "_planning"))
+      })
+    })()
+}
 
 
 #' Generate a long-format planning table from the Planning_v2 sheet in the
