@@ -29,10 +29,10 @@ max_year <- function() 2025
 #' planning googlesheet.
 #'
 #' @param ss The id of the planning googlesheet
-get_planning_long <- function(ss) {
+get_planning_long <- function(ss = gs_id()) {
   # read the planning data
   read_sheet(
-    ss = gs_id(),
+    ss,
     sheet = "Planning_v2",
     col_types = "ccccllliccccdddddddddddccdddddddddddcc",
     .name_repair = "minimal"
