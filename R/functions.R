@@ -93,7 +93,7 @@ summarize_planning_long <- function(x,
     ) |>
     summarize(
       days = sum(nr_days) |> round(2),
-      .by = c(person, {{ tempres }})
+      .by = c(person, all_of(tempres))
     ) |>
     arrange(person, {{ tempres }})
 }
