@@ -22,6 +22,9 @@ library(purrr)
 #' Return id of the planning googlesheet
 gs_id <- function() "1HLtyGK_csi5W_v7XChxgTuVjS-RKXqc0Jxos1RBqpwk"
 
+#' Return default max_year value
+max_year <- function() 2025
+
 #' Generate a long-format planning table from the Planning_v2 sheet in the
 #' planning googlesheet.
 get_planning_long <- function(ss) {
@@ -49,7 +52,11 @@ get_planning_long <- function(ss) {
     ) |>
     mutate(
       continuous = deadline == "Doorlopend",
-      deadline = ifelse(deadline == "Doorlopend", "2025-12", deadline),
+      deadline = ifelse(
+        deadline == "Doorlopend",
+        paste0(max_year(), "-12"),
+        deadline
+      ),
       start = ym(start),
       deadline = ym(deadline) + months(1) - days(1),
       nr_months = as.period(deadline - start) |>
@@ -121,7 +128,7 @@ summarize_planning_long <- function(x,
 #' debugging.
 summarize_planning <- function(planning_long,
                                priorities = 1,
-                               max_year = 2025,
+                               max_year = max_year(),
                                tempres = c("y_month", "y"),
                                include_continuous = TRUE) {
   tempres <- if (!is.null(tempres)) (match.arg(tempres))
