@@ -80,10 +80,11 @@ get_planning_long <- function(ss = gs_id()) {
 
 #' @keywords internal
 summarize_planning_long <- function(x,
-                                    priorities,
-                                    max_year,
-                                    tempres,
-                                    include_continuous) {
+                                    priorities = 1,
+                                    max_year = max_y(),
+                                    tempres = c("y_month", "y"),
+                                    include_continuous = TRUE) {
+  tempres <- if (!is.null(tempres)) (match.arg(tempres))
   x |>
     mutate(y = year(date)) |>
     filter(
