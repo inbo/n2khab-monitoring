@@ -17,81 +17,76 @@ library(forcats)
 library(lubridate)
 library(purrr)
 
-
-# id of the planning googlesheet ------------------------------------------
-
-gs_id <- "1HLtyGK_csi5W_v7XChxgTuVjS-RKXqc0Jxos1RBqpwk"
-
-
-# read the planning data --------------------------------------------------
-
-df <- read_sheet(
-  ss = gs_id,
-  sheet = "Planning_v2",
-  col_types = "ccccllliccccdddddddddddccdddddddddddcc",
-  .name_repair = "minimal"
-)
-
-
-# clean planning data and turn it into long format ------------------------
-
-df_long <-
-  df |>
-  clean_names() |>
-  select(
-    -uitvoerders,
-    -reviewers,
-    -starts_with("totaal_dagen"),
-    -ends_with("_buiten_kern"),
-    -starts_with("tijdsinvestering")
-  ) |>
-  rename_with(
-    .cols = karen:datamanager,
-    .fn = \(x) {
-      str_c(x, "_1")
-    }
-  ) |>
-  mutate(
-    continuous = deadline == "Doorlopend",
-    deadline = ifelse(deadline == "Doorlopend", "2025-12", deadline),
-    start = ym(start),
-    deadline = ym(deadline) + months(1) - days(1),
-    nr_months = as.period(deadline - start) |>
-      as.numeric("months") |>
-      round() |>
-      as.integer()
-  ) |>
-  uncount(nr_months, .remove = FALSE) |>
-  mutate(
-    date = start + months(row_number() - 1),
-    y_month = str_c(year(date), "_", str_pad(month(date), 2, pad = "0")) |>
-      factor(),
-    .by = taakomschrijving
-  ) |>
-  pivot_longer(
-    cols = karen_1:datamanager_2,
-    names_to = c(".value", "task_type"),
-    names_pattern = "(.+)_([12])$"
-  ) |>
-  pivot_longer(
-    karen:datamanager,
-    names_to = "person",
-    values_to = "nr_days",
-    values_drop_na = TRUE
-  ) |>
-  mutate(
-    task_type = ifelse(task_type == "1", "uitvoering", "review") |> fct(),
-    nr_days = ifelse(
-      continuous,
-      nr_days,
-      nr_days / nr_months
-    ),
-    across(where(is.character), fct)
-  ) |>
-  select(-nr_months)
-
-
 # functions ---------------------------------------------------------------
+
+#' Return id of the planning googlesheet
+gs_id <- function() "1HLtyGK_csi5W_v7XChxgTuVjS-RKXqc0Jxos1RBqpwk"
+
+#' Generate a long-format planning table from the Planning_v2 sheet in the
+#' planning googlesheet.
+get_planning_long <- function(ss) {
+  # read the planning data
+  read_sheet(
+    ss = gs_id(),
+    sheet = "Planning_v2",
+    col_types = "ccccllliccccdddddddddddccdddddddddddcc",
+    .name_repair = "minimal"
+  ) |>
+  # clean planning data and turn it into long format
+    clean_names() |>
+    select(
+      -uitvoerders,
+      -reviewers,
+      -starts_with("totaal_dagen"),
+      -ends_with("_buiten_kern"),
+      -starts_with("tijdsinvestering")
+    ) |>
+    rename_with(
+      .cols = karen:datamanager,
+      .fn = \(x) {
+        str_c(x, "_1")
+      }
+    ) |>
+    mutate(
+      continuous = deadline == "Doorlopend",
+      deadline = ifelse(deadline == "Doorlopend", "2025-12", deadline),
+      start = ym(start),
+      deadline = ym(deadline) + months(1) - days(1),
+      nr_months = as.period(deadline - start) |>
+        as.numeric("months") |>
+        round() |>
+        as.integer()
+    ) |>
+    uncount(nr_months, .remove = FALSE) |>
+    mutate(
+      date = start + months(row_number() - 1),
+      y_month = str_c(year(date), "_", str_pad(month(date), 2, pad = "0")) |>
+        factor(),
+      .by = taakomschrijving
+    ) |>
+    pivot_longer(
+      cols = karen_1:datamanager_2,
+      names_to = c(".value", "task_type"),
+      names_pattern = "(.+)_([12])$"
+    ) |>
+    pivot_longer(
+      karen:datamanager,
+      names_to = "person",
+      values_to = "nr_days",
+      values_drop_na = TRUE
+    ) |>
+    mutate(
+      task_type = ifelse(task_type == "1", "uitvoering", "review") |> fct(),
+      nr_days = ifelse(
+        continuous,
+        nr_days,
+        nr_days / nr_months
+      ),
+      across(where(is.character), fct)
+    ) |>
+    select(-nr_months)
+}
+
 
 #' @keywords internal
 summarize_planning_long <- function(x,
@@ -99,7 +94,6 @@ summarize_planning_long <- function(x,
                                     max_year,
                                     tempres,
                                     include_continuous) {
-  tempres <- if (!is.null(tempres)) (match.arg(tempres))
   x |>
     mutate(y = year(date)) |>
     filter(
@@ -116,7 +110,7 @@ summarize_planning_long <- function(x,
 
 #' Summarize planning (days occupied) by person and by month or year
 #'
-#' @param x Long format of planning data.
+#' @param planning_long Long format of planning data.
 #' @param priorities Numeric vector of priorities, used to filter the
 #' 'prioriteit' column in x.
 #' @param max_year Number; the maximum allowed year from x.
@@ -125,13 +119,14 @@ summarize_planning_long <- function(x,
 #' Should continuous tasks be included?
 #' Defaults to `TRUE`; value `FALSE` can be useful in manual checks or
 #' debugging.
-summarize_planning <- function(x,
+summarize_planning <- function(planning_long,
                                priorities = 1,
                                max_year = 2025,
                                tempres = c("y_month", "y"),
                                include_continuous = TRUE) {
+  tempres <- if (!is.null(tempres)) (match.arg(tempres))
   summarize_planning_long(
-    x = x,
+    x = planning_long,
     priorities = priorities,
     max_year = max_year,
     tempres = tempres,
@@ -148,22 +143,28 @@ summarize_planning <- function(x,
 # using the top level summarizing function --------------------------------
 
 # for checking (use temporary view to filter non-continuous tasks in gsheet):
+pl_long <- get_planning_long(gs_id())
+
 summarize_planning(
-  df_long,
+  pl_long,
   priorities = 1:5,
   tempres = NULL,
   include_continuous = FALSE,
   max_year = 2028
 )
 
-summarize_planning(df_long, priorities = 1) |>
-  write_sheet(ss = gs_id, sheet = "priority_1")
-summarize_planning(df_long, priorities = 1, tempres = "y") |>
-  write_sheet(ss = gs_id, sheet = "priority_1_year")
-summarize_planning(df_long, priorities = 1:2) |>
-  write_sheet(ss = gs_id, sheet = "priority_1:2")
-summarize_planning(df_long, priorities = 1:5) |>
-  write_sheet(ss = gs_id, sheet = "priority_1:5")
+#' Update the priority_xxx sheets in the planning googlesheet
+update_priority_sheets <- function(planning_long, ss = gs_id()) {
+  summarize_planning(planning_long, priorities = 1) |>
+    write_sheet(ss = ss, sheet = "priority_1")
+  summarize_planning(planning_long, priorities = 1, tempres = "y") |>
+    write_sheet(ss = ss, sheet = "priority_1_year")
+  summarize_planning(planning_long, priorities = 1:2) |>
+    write_sheet(ss = ss, sheet = "priority_1:2")
+  summarize_planning(planning_long, priorities = 1:5) |>
+    write_sheet(ss = ss, sheet = "priority_1:5")
+}
+
 
 # create data frames with planning per person -----------------------------
 
@@ -201,47 +202,48 @@ df_long |>
           names_from = y_month,
           values_from = task_days
         ) |>
-        write_sheet(ss = gs_id, sheet = str_c(as.character(name), "_planning"))
+        write_sheet(ss = gs_id(), sheet = str_c(as.character(name), "_planning"))
     })
   })()
 
 
-# read availability data and turn into long format ------------------------
 
-avail <- read_sheet(
-  ss = gs_id,
-  sheet = "Beschikbaarheid"
-)
+# functions ---------------------------------------------------------------
 
-avail_long <-
-  avail |>
-  mutate(y_month = factor(y_month)) |>
-  select(y_month, ends_with("_mnm"), mo_gw:datamanager) |>
-  rename_with(
-    .cols = ends_with("_mnm"),
-    .fn = \(x) str_remove(x, "_mnm$")
+
+#' Generate a long-format planning table from the Planning_v2 sheet in the
+#' planning googlesheet.
+get_availability_long <- function(ss = gs_id()) {
+  read_sheet(
+    ss = ss,
+    sheet = "Beschikbaarheid"
   ) |>
-  pivot_longer(
-    -y_month,
-    names_to = "person",
-    values_to = "days_avail"
-  ) |>
-  mutate(person = fct(person))
+    mutate(y_month = factor(y_month)) |>
+    select(y_month, ends_with("_mnm"), mo_gw:datamanager) |>
+    rename_with(
+      .cols = ends_with("_mnm"),
+      .fn = \(x) str_remove(x, "_mnm$")
+    ) |>
+    pivot_longer(
+      -y_month,
+      names_to = "person",
+      values_to = "days_avail"
+    ) |>
+    mutate(person = fct(person))
+}
 
-
-# function to return number of days left per person x month ---------------
 
 #' Summarize planning table by returning number of days left per person & month
 #'
-#' @param y Long format of person availability data.
+#' @param availability_long Long format of person availability data.
 #' @inheritParams summarize_planning
-summarize_days_left <- function(x,
-                                y,
+summarize_days_left <- function(planning_long,
+                                availability_long,
                                 priorities = 1) {
-  x |>
+  planning_long |>
     summarize_planning_long(priorities = priorities) |>
     inner_join(
-      y,
+      availability_long,
       join_by(y_month, person),
       relationship = "many-to-one",
       unmatched = "drop"
@@ -256,7 +258,16 @@ summarize_days_left <- function(x,
 }
 
 
+#' Update priority_1_avail sheet with number of days left per person & month
+update_priority_1_avail_sheet <- function(planning_long,
+                                          availability_long,
+                                          ss = gs_id()) {
+  summarize_days_left(planning_long, availability_long, priorities = 1) |>
+  write_sheet(ss = ss, sheet = "priority_1_avail")
+}
+
 # apply function to return number of days left (person x month) -----------
 
-summarize_days_left(df_long, avail_long, priorities = 1) |>
-  write_sheet(ss = gs_id, sheet = "priority_1_avail")
+avail_long <- get_availability_long()
+
+update_priority_1_avail_sheet(pl_long, avail_long)
