@@ -190,6 +190,7 @@ update_person_sheets <- function(planning_long,
       values_from = nr_days,
       values_fill = 0
     ) |>
+    filter(doen_we, !finished, floor_date(today(), unit = "month") <= date) |>
     nest(data = -person) |>
     (function(x) {
       walk2(x$person, x$data, function(name, df) {
@@ -205,8 +206,9 @@ update_person_sheets <- function(planning_long,
           ) |>
           arrange(start, deadline) |>
           select(-c(
-            statistisch:automatisatie,
-            continuous,
+            statistisch:doen_we,
+            afgerond,
+            continuous:finished,
             date,
             uitvoering,
             review
