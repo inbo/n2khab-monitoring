@@ -130,6 +130,9 @@ summarize_planning_long <- function(x,
 #' Summarize planning (days occupied) by person and by month or year
 #'
 #' @param planning_long Long format of planning data.
+#' @param restrict_to_selected Logical.
+#' Should only the tasks where `doen_we` is `TRUE` be kept?
+#' If `FALSE`, then all tasks are kept.
 #' @param priorities Numeric vector of priorities, used to filter the
 #' 'prioriteit' column in x.
 #' @param max_year Number; the maximum allowed year from planning_long.
