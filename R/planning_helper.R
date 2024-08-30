@@ -18,6 +18,9 @@ library(lubridate)
 library(purrr)
 source("R/functions.R")
 
+#' Optionally change below max_year value; it's used to limit processed results
+max_y <- function() 2025
+
 # Get planning table as long-table format
 pl_long <- get_planning_long()
 

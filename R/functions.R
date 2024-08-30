@@ -3,9 +3,6 @@
 #' Return id of the planning googlesheet
 gs_id <- function() "1HLtyGK_csi5W_v7XChxgTuVjS-RKXqc0Jxos1RBqpwk"
 
-#' Return default max_year value
-max_y <- function() 2025
-
 #' Generate a long-format planning table from the Planning_v2 sheet in the
 #' planning googlesheet.
 #'
