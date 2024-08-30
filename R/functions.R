@@ -208,6 +208,11 @@ update_planningsummary_sheets <- function(planning_long, ss = gs_id()) {
 #' Generate and update the reordered planning tables per person in the planning
 #' googlesheet
 #'
+#' @details
+#' Note that this function only picks tasks for which
+#' `doen_we` is `TRUE` _and_ which are not finished.
+#' Also, task x month combinations that belong to past months are dropped.
+#'
 #' @inheritParams get_planning_long
 #' @inheritParams summarize_planning
 update_person_sheets <- function(planning_long,
