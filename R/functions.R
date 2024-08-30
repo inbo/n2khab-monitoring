@@ -56,8 +56,7 @@ get_planning_long <- function(ss = gs_id()) {
         started ~ gestart,
         !started & finished ~ start,
         .default = pmax(start, first_day_currentmonth, na.rm = TRUE)
-      ) |>
-        as.Date(),
+      ),
       # which end date to take in calculating currently applicable interval?
       end = ifelse(finished, afgerond, deadline) |>
         as.Date(),
