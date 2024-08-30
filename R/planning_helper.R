@@ -33,11 +33,11 @@ avail_long <- get_availability_long()
 # Update the reordered planning tables per person in the planning googlesheet
 update_person_sheets(pl_long)
 
-# Update priority_1_avail sheet with number of days left per person & month
-update_priority_1_avail_sheet(pl_long, avail_long)
+# Update the daysleft_xxx sheets with number of days left per person & month
+update_daysleft_sheets(pl_long, avail_long)
 
-# Update the priority_xxx sheets in the planning googlesheet
-update_priority_sheets(pl_long)
+# Update the plansum_xxx sheets in the planning googlesheet
+update_planningsummary_sheets(pl_long)
 
 
 
@@ -48,6 +48,7 @@ update_priority_sheets(pl_long)
 
 summarize_planning(
   pl_long,
+  restrict_to_selected = FALSE,
   priorities = 1:5,
   tempres = NULL,
   include_continuous = FALSE,
