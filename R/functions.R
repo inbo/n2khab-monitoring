@@ -40,16 +40,45 @@ get_planning_long <- function(ss = gs_id()) {
         paste0(max_y(), "-12"),
         deadline
       ),
+      # intended dates
       start = ym(start),
       deadline = ym(deadline) + months(1) - days(1),
-      nr_months = as.period(deadline - start) |>
+      # actual months (as dates) of starting and finishing (only for started tasks)
+      gestart = ym(gestart),
+      afgerond = ym(afgerond) + months(1) - days(1),
+      # derived variables:
+      # ####################
+      # 2 logicals
+      started = !is.na(gestart),
+      finished = !is.na(afgerond),
+      # first & last day of current month
+      first_day_currentmonth = floor_date(today(), unit = "month"),
+      last_day_currentmonth = ceiling_date(today(), unit = "month") - days(1),
+      # which start date to take in calculating currently applicable interval?
+      begin = case_when(
+        started ~ gestart,
+        !started & finished ~ start,
+        .default = pmax(start, first_day_currentmonth, na.rm = TRUE)
+      ) |>
+        as.Date(),
+      # which end date to take in calculating currently applicable interval?
+      end = ifelse(finished, afgerond, deadline) |>
+        as.Date(),
+      # is the task overdue?
+      overdue = !finished & today() > end,
+      # number of months of the interval
+      nr_months = case_when(
+        started & overdue ~ as.period(last_day_currentmonth - begin),
+        !started & overdue ~ period(1, "month"),
+        .default = as.period(end - begin)
+      ) |>
         as.numeric("months") |>
         round() |>
         as.integer()
     ) |>
     uncount(nr_months, .remove = FALSE) |>
     mutate(
-      date = start + months(row_number() - 1),
+      date = begin + months(row_number() - 1),
       y_month = str_c(year(date), "_", str_pad(month(date), 2, pad = "0")) |>
         factor(),
       .by = taakomschrijving
@@ -74,7 +103,7 @@ get_planning_long <- function(ss = gs_id()) {
       ),
       across(where(is.character), fct)
     ) |>
-    select(-nr_months)
+    select(-c(first_day_currentmonth:end, nr_months))
 }
 
 
