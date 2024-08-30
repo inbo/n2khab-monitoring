@@ -109,7 +109,8 @@ get_planning_long <- function(ss = gs_id()) {
 
 #' @keywords internal
 summarize_planning_long <- function(x,
-                                    priorities = 1,
+                                    restrict_to_selected = TRUE,
+                                    priorities = 1:10,
                                     max_year = max_y(),
                                     tempres = c("y_month", "y"),
                                     include_continuous = TRUE) {
@@ -117,6 +118,7 @@ summarize_planning_long <- function(x,
   x |>
     mutate(y = year(date)) |>
     filter(
+      if (restrict_to_selected) doen_we else TRUE,
       prioriteit %in% priorities,
       y <= max_year,
       include_continuous | !continuous
@@ -140,13 +142,15 @@ summarize_planning_long <- function(x,
 #' Defaults to `TRUE`; value `FALSE` can be useful in manual checks or
 #' debugging.
 summarize_planning <- function(planning_long,
-                               priorities = 1,
+                               restrict_to_selected = TRUE,
+                               priorities = 1:10,
                                max_year = max_y(),
                                tempres = c("y_month", "y"),
                                include_continuous = TRUE) {
   tempres <- if (!is.null(tempres)) (match.arg(tempres))
   summarize_planning_long(
     x = planning_long,
+    restrict_to_selected = restrict_to_selected,
     priorities = priorities,
     max_year = max_year,
     tempres = tempres,
@@ -163,15 +167,41 @@ summarize_planning <- function(planning_long,
 #'
 #' @inheritParams get_planning_long
 #' @inheritParams summarize_planning
-update_priority_sheets <- function(planning_long, ss = gs_id()) {
-  summarize_planning(planning_long, priorities = 1) |>
-    write_sheet(ss = ss, sheet = "priority_1")
-  summarize_planning(planning_long, priorities = 1, tempres = "y") |>
-    write_sheet(ss = ss, sheet = "priority_1_year")
-  summarize_planning(planning_long, priorities = 1:2) |>
-    write_sheet(ss = ss, sheet = "priority_1:2")
-  summarize_planning(planning_long, priorities = 1:5) |>
-    write_sheet(ss = ss, sheet = "priority_1:5")
+update_planningsummary_sheets <- function(planning_long, ss = gs_id()) {
+  summarize_planning(
+    planning_long,
+    restrict_to_selected = TRUE
+  ) |>
+    write_sheet(ss = ss, sheet = "plansum_doen_we")
+
+  summarize_planning(
+    planning_long,
+    priorities = 1,
+    restrict_to_selected = FALSE
+  ) |>
+    write_sheet(ss = ss, sheet = "plansum_priority_1")
+
+  summarize_planning(
+    planning_long,
+    priorities = 1,
+    tempres = "y",
+    restrict_to_selected = FALSE
+  ) |>
+    write_sheet(ss = ss, sheet = "plansum_priority_1_year")
+
+  summarize_planning(
+    planning_long,
+    priorities = 1:2,
+    restrict_to_selected = FALSE
+  ) |>
+    write_sheet(ss = ss, sheet = "plansum_priority_1:2")
+
+  summarize_planning(
+    planning_long,
+    priorities = 1:5,
+    restrict_to_selected = FALSE
+  ) |>
+    write_sheet(ss = ss, sheet = "plansum_priority_1:5")
 }
 
 
@@ -253,10 +283,12 @@ get_availability_long <- function(ss = gs_id()) {
 #' @inheritParams summarize_planning
 summarize_days_left <- function(planning_long,
                                 availability_long,
-                                priorities = 1,
+                                restrict_to_selected = TRUE,
+                                priorities = 1:10,
                                 max_year = max_y()) {
   planning_long |>
     summarize_planning_long(
+      restrict_to_selected = restrict_to_selected,
       priorities = priorities,
       max_year = max_year
     ) |>
@@ -276,17 +308,26 @@ summarize_days_left <- function(planning_long,
 }
 
 
-#' Update priority_1_avail sheet with number of days left per person & month
-update_priority_1_avail_sheet <- function(planning_long,
-                                          availability_long,
-                                          ss = gs_id()) {
+#' Update daysleft_xxx sheets with number of days left per person & month
+update_daysleft_sheets <- function(planning_long,
+                                   availability_long,
+                                   ss = gs_id()) {
   summarize_days_left(
     planning_long,
     availability_long,
+    restrict_to_selected = TRUE,
+    max_year = max_y()
+  ) |>
+    write_sheet(ss = ss, sheet = "daysleft_doen_we")
+
+  summarize_days_left(
+    planning_long,
+    availability_long,
+    restrict_to_selected = FALSE,
     priorities = 1,
     max_year = max_y()
   ) |>
-    write_sheet(ss = ss, sheet = "priority_1_avail")
+    write_sheet(ss = ss, sheet = "daysleft_priority_1")
 }
 
 
