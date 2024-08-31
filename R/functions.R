@@ -265,8 +265,8 @@ update_person_sheets <- function(planning_long,
 }
 
 
-#' Generate a long-format planning table from the Planning_v2 sheet in the
-#' planning googlesheet.
+#' Generate a long-format table of available working days per person from the
+#' Beschikbaarheid sheet in the planning googlesheet.
 #'
 #' @inheritParams get_planning_long
 get_availability_long <- function(ss = gs_id()) {
