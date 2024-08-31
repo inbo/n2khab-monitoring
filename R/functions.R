@@ -6,6 +6,14 @@ gs_id <- function() "1HLtyGK_csi5W_v7XChxgTuVjS-RKXqc0Jxos1RBqpwk"
 #' Generate a long-format planning table from the Planning_v2 sheet in the
 #' planning googlesheet.
 #'
+#' Reads the 'wide-format' Planning_v2 sheet from the planning googlesheet and
+#' tries to update the planned month intervals to actual (expected/required)
+#' month intervals, by taking into account current task status, current date,
+#' actual month that the task was started.
+#' The 'long-format' part is about several things: putting persons below each
+#' other, putting 'uitvoering' and 'review' below each other, and also the
+#' expansion of intervals to the respective months.
+#'
 #' @param ss The id of the planning googlesheet
 get_planning_long <- function(ss = gs_id()) {
   # read the planning data
