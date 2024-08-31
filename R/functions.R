@@ -170,7 +170,7 @@ summarize_planning <- function(planning_long,
     )
 }
 
-#' Update the priority_xxx sheets in the planning googlesheet
+#' Update the plansum_xxx sheets in the planning googlesheet
 #'
 #' @inheritParams get_planning_long
 #' @inheritParams summarize_planning
