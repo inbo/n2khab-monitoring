@@ -10,20 +10,20 @@ gs_id <- function() "1HLtyGK_csi5W_v7XChxgTuVjS-RKXqc0Jxos1RBqpwk"
 #' It will throw errors or warnings if something goes wrong.
 #'
 #' @details the function can be used in a dplyr pipe, which is why
-#' it requires and returns the `.data` argument.
-#' @param .data a data frame (or derivative) loaded from a google sheet
-sanity_checks <- function (.data) {
+#' it requires and returns the `data` argument.
+#' @param data a data frame (or derivative) loaded from a google sheet
+sanity_checks <- function(data) {
   # https://github.com/hadley/assertthat/issues/41
 
   # check if there are NA columns not supposed to be empty
-  required_columns <- c('Thema', 'Subthema', 'Start')
-  if (any(is.na(.data[, required_columns]))) {
-    troublemakers = rownames(.data)[rowSums(is.na(.data[, required_columns])) > 0]
+  required_columns <- c("Thema", "Subthema", "Start")
+  if (any(is.na(data[, required_columns]))) {
+    troublemakers = rownames(data)[rowSums(is.na(data[, required_columns])) > 0]
     message(paste0("Start and Deadline of a task may not be empty! (line/s ", troublemakers, ")")
             )
   }
 
-  return(.data)
+  return(data)
 
   # brief info about warnings/errors etc.:
   # https://stackoverflow.com/a/68713357
