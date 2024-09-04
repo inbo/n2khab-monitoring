@@ -14,12 +14,11 @@ gs_id <- function() "1HLtyGK_csi5W_v7XChxgTuVjS-RKXqc0Jxos1RBqpwk"
 #' @param .data a data frame (or derivative) loaded from a google sheet
 sanity_checks <- function (.data) {
   # https://github.com/hadley/assertthat/issues/41
-  print(str(.data))
   assertthat::assert_that(
               !any(is.na(.data[['Start']])),
-              msg = paste0("Start of a task may not be empty!\n",
-                           .data |> filter(is.na(Start))
-                           )
+              msg = paste0("Start of a task may not be empty! (line/s ",
+                           rownames(.data)[rowSums(is.na(.data[, c('Start','Deadline')])) > 0]
+                           , ")")
               )
   return(.data)
 }
