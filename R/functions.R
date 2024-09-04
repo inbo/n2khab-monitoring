@@ -3,6 +3,28 @@
 #' Return id of the planning googlesheet
 gs_id <- function() "1HLtyGK_csi5W_v7XChxgTuVjS-RKXqc0Jxos1RBqpwk"
 
+
+#' Sanity checks for the google sheet.
+#' This function is used in data pipe-lines to check that everything
+#' in the google sheet is as expected.
+#' It will throw errors or warnings if something goes wrong.
+#'
+#' @details the function can be used in a dplyr pipe, which is why
+#' it requires and returns the `.data` argument.
+#' @param .data a data frame (or derivative) loaded from a google sheet
+sanity_checks <- function (.data) {
+  # https://github.com/hadley/assertthat/issues/41
+  print(str(.data))
+  assertthat::assert_that(
+              !any(is.na(.data[['Start']])),
+              msg = paste0("Start of a task may not be empty!\n",
+                           .data |> filter(is.na(Start))
+                           )
+              )
+  return(.data)
+}
+
+
 #' Generate a long-format planning table from the Planning_v2 sheet in the
 #' planning googlesheet.
 #'
@@ -22,7 +44,8 @@ get_planning_long <- function(ss = gs_id()) {
     sheet = "Planning_v2",
     col_types = "cccclllilccccccdddddddddddccdddddddddddcc",
     .name_repair = "minimal"
-  ) |>
+    ) |>
+    sanity_checks() |>
     # clean planning data and turn it into long format
     clean_names() |>
     select(
