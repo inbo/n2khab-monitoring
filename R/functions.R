@@ -20,7 +20,7 @@ get_planning_long <- function(ss = gs_id()) {
   read_sheet(
     ss,
     sheet = "Planning_v2",
-    col_types = "cccclllilccccccdddddddddddccdddddddddddcc",
+    col_types = "ccccclllilccccccdddddddddddccdddddddddddcc",
     .name_repair = "minimal"
   ) |>
     # clean planning data and turn it into long format
