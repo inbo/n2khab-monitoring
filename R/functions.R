@@ -14,13 +14,20 @@ gs_id <- function() "1HLtyGK_csi5W_v7XChxgTuVjS-RKXqc0Jxos1RBqpwk"
 #' @param .data a data frame (or derivative) loaded from a google sheet
 sanity_checks <- function (.data) {
   # https://github.com/hadley/assertthat/issues/41
-  assertthat::assert_that(
-              !any(is.na(.data[['Start']])),
-              msg = paste0("Start of a task may not be empty! (line/s ",
-                           rownames(.data)[rowSums(is.na(.data[, c('Start','Deadline')])) > 0]
-                           , ")")
-              )
+
+  # check if there are NA columns not supposed to be empty
+  required_columns <- c('Thema', 'Subthema', 'Start')
+  if (any(is.na(.data[, required_columns]))) {
+    troublemakers = rownames(.data)[rowSums(is.na(.data[, required_columns])) > 0]
+    message(paste0("Start and Deadline of a task may not be empty! (line/s ", troublemakers, ")")
+            )
+  }
+
   return(.data)
+
+  # brief info about warnings/errors etc.:
+  # https://stackoverflow.com/a/68713357
+  # https://reside-ic.github.io/blog/a-warning-about-warning/
 }
 
 
@@ -96,6 +103,7 @@ get_planning_long <- function(ss = gs_id()) {
       nr_months = case_when(
         started & overdue ~ as.period(last_day_currentmonth - begin),
         !started & overdue ~ period(1, "month"),
+        is.na(start) & is.na(deadline) ~ period(0, "month"),
         .default = as.period(end - begin)
       ) |>
         as.numeric("months") |>
