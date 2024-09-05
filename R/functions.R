@@ -12,7 +12,7 @@ gs_id <- function() "1HLtyGK_csi5W_v7XChxgTuVjS-RKXqc0Jxos1RBqpwk"
 #' @details the function can be used in a dplyr pipe, which is why
 #' it requires and returns the `data` argument.
 #' @param data a data frame (or derivative) loaded from a google sheet
-sanity_checks <- function(data) {
+perform_sanity_checks <- function(data) {
   # https://github.com/hadley/assertthat/issues/41
 
   # check if there are NA columns not supposed to be empty
@@ -63,7 +63,7 @@ get_planning_long <- function(ss = gs_id()) {
     ) |>
     # clean planning data and turn it into long format
     clean_names() |>
-    sanity_checks() |>
+    perform_sanity_checks() |>
     select(
       -uitvoerders,
       -reviewers,
