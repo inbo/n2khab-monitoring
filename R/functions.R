@@ -23,6 +23,20 @@ sanity_checks <- function (.data) {
   return(.data)
 }
 
+#' Read the Planning_v2 sheet in the planning googlesheet.
+#' @details see R/functions.R/get_planning_long()
+#' @param ss The id of the planning googlesheet
+get_planning_raw <- function(ss = gs_id()) {
+  # read the planning data
+  read_sheet(
+    ss,
+    sheet = "Planning_v2",
+    col_types = "ccccclllilccccccdddddddddddccdddddddddddcc",
+    .name_repair = "minimal"
+    )
+}
+
+
 
 #' Generate a long-format planning table from the Planning_v2 sheet in the
 #' planning googlesheet.
@@ -38,12 +52,7 @@ sanity_checks <- function (.data) {
 #' @param ss The id of the planning googlesheet
 get_planning_long <- function(ss = gs_id()) {
   # read the planning data
-  read_sheet(
-    ss,
-    sheet = "Planning_v2",
-    col_types = "ccccclllilccccccdddddddddddccdddddddddddcc",
-    .name_repair = "minimal"
-    ) |>
+  get_planning_raw(ss = ss) |>
     sanity_checks() |>
     # clean planning data and turn it into long format
     clean_names() |>

@@ -6,19 +6,6 @@
 source("R/functions.R")
 library(googlesheets4)
 
-#' Read the Planning_v2 sheet in the planning googlesheet.
-#' @details see R/functions.R/get_planning_long()
-#' @param ss The id of the planning googlesheet
-get_planning_raw <- function(ss = gs_id()) {
-  # read the planning data
-  read_sheet(
-    ss,
-    sheet = "Planning_v2",
-    col_types = "ccccclllilccccccdddddddddddccdddddddddddcc",
-    .name_repair = "minimal"
-    )
-}
-
 
 #' Store a local backup of the google planning table.
 #' @details
@@ -38,7 +25,7 @@ write_local_backup <- function(ss = gs_id(), verbose = TRUE, filetype = c('rds',
       # create it... if the user confirms
       dir.create(here::here("local_backups"), showWarnings = FALSE)
     } else {
-      print("No backup stored.")
+      message("No backup stored.")
       return(NA)
     }
   }
@@ -46,7 +33,7 @@ write_local_backup <- function(ss = gs_id(), verbose = TRUE, filetype = c('rds',
   # backup the table
   if (missing(planning_table)) {
     # table loading can be unsuccesful.
-    print("backup unsuccesful: no table loaded.")
+    message("backup unsuccesful: no table loaded.")
   } else {
     # if a table was loaded, back it up.
 
@@ -65,7 +52,7 @@ write_local_backup <- function(ss = gs_id(), verbose = TRUE, filetype = c('rds',
 
     # optionally report execution
     if (verbose) {
-      print(paste0('planning sheet backed up here: ', file_path_backup))
+      message(paste0('planning sheet backed up here: ', file_path_backup))
     }
 
   } # table backup
