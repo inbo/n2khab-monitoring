@@ -16,16 +16,26 @@ sanity_checks <- function(data) {
   # https://github.com/hadley/assertthat/issues/41
 
   # check if there are NA columns not supposed to be empty
-  required_columns <- c("Thema", "Subthema", "Start")
+  required_columns <- c("thema", "subthema", "start")
+
+  # troublemakers <- data |>
+  #   filter(if_any({{required_columns}}, is.na)) |>
+  #   pull(taakcode) # <- this is non-informative if the "taakcode" was blank
+
   if (any(is.na(data[, required_columns]))) {
-    troublemakers = rownames(data)[rowSums(is.na(data[, required_columns])) > 0]
-    message(paste0("Start and Deadline of a task may not be empty! (line/s ", troublemakers, ")")
+    troublemakers <- which(rowSums(is.na(data[, required_columns])) > 0)
+    warning(paste0("Columns {",
+                   paste(required_columns, collapse = ", "),
+                   "} may not be empty! (line/s ",
+                   troublemakers, ")"
+                   )
             )
   }
 
   return(data)
 
-  # brief info about warnings/errors etc.:
+  # further reading about warnings/errors etc.:
+  # https://adv-r.hadley.nz/conditions.html#warnings
   # https://stackoverflow.com/a/68713357
   # https://reside-ic.github.io/blog/a-warning-about-warning/
 }
@@ -51,9 +61,9 @@ get_planning_long <- function(ss = gs_id()) {
     col_types = "ccccclllilccccccdddddddddddccdddddddddddcc",
     .name_repair = "minimal"
     ) |>
-    sanity_checks() |>
     # clean planning data and turn it into long format
     clean_names() |>
+    sanity_checks() |>
     select(
       -uitvoerders,
       -reviewers,
