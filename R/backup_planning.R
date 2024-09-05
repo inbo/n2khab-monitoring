@@ -6,7 +6,7 @@
 source("R/functions.R")
 library(googlesheets4)
 
-#' read the Planning_v2 sheet in the planning googlesheet.
+#' Read the Planning_v2 sheet in the planning googlesheet.
 #' @details see R/functions.R/get_planning_long()
 #' @param ss The id of the planning googlesheet
 get_planning_raw <- function(ss = gs_id()) {
@@ -20,15 +20,14 @@ get_planning_raw <- function(ss = gs_id()) {
 }
 
 
-#' Procedure to store a local backup of the google planning table.
+#' Store a local backup of the google planning table.
 #' @details
-#' This will take a table and save it to disk,
-#' either as `rds` or as `csv`.
+#' Take the planning table and save it to disk, either as `rds` or as `csv`.
 #' @param ss a google sheet ID.
 #' @param filetype rds (binary) or csv (text).
 #' @param verbose whether or not output shall be printed.
-#' @examples local_backup(verbose = TRUE, filetype = 'rds')
-local_backup <- function(ss = gs_id(), verbose = TRUE, filetype = c('rds', 'csv')) {
+#' @examples write_local_backup(verbose = TRUE, filetype = 'rds')
+write_local_backup <- function(ss = gs_id(), verbose = TRUE, filetype = c('rds', 'csv')) {
 
   # query the planning table
   planning_table <- get_planning_raw(ss)
