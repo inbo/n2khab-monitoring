@@ -26,14 +26,14 @@ write_local_backup <- function(ss = gs_id(), verbose = TRUE, filetype = c('rds',
       dir.create(here::here("local_backups"), showWarnings = FALSE)
     } else {
       message("No backup stored.")
-      return(NA)
+      return(invisible(NULL))
     }
   }
 
   # backup the table
   if (missing(planning_table)) {
     # table loading can be unsuccesful.
-    message("backup unsuccesful: no table loaded.")
+    warning("backup unsuccesful: no table loaded.")
   } else {
     # if a table was loaded, back it up.
 
@@ -41,13 +41,14 @@ write_local_backup <- function(ss = gs_id(), verbose = TRUE, filetype = c('rds',
     extension <- match.arg(filetype)
 
     # choose a meaningful storage path
-    file_name <- paste0(format(Sys.time(), "%Y%m%d_planning_googlesheet"), ".", extension)
+    file_name <- paste0(format(Sys.time(), "%Y%m%d_planning_googlesheet"),
+                        ".", extension)
     file_path_backup <- here::here("local_backups", file_name)
 
     # write the backup
     switch(extension,
            rds = saveRDS(planning_table, file_path_backup),
-           csv = write.csv(planning_table, file_path_backup)
+           csv = readr::write_csv(planning_table, file_path_backup)
            )
 
     # optionally report execution
