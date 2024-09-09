@@ -33,14 +33,12 @@ write_local_backup <- function(ss = gs_id(), verbose = TRUE, filetype = c('rds',
   # check that the loaded table is of the right type and dimension
   if (!inherits(planning_table, "data.frame")) {
     # table loading can be unsuccessful.
-    warning("backup unsuccessful: no data frame loaded.")
-    return(invisible(NULL))
+    stop("backup unsuccessful: no data frame loaded.")
   }
 
   if ((nrow(planning_table) == 0) || (ncol(planning_table) == 0)) {
   # if a table was loaded, back it up.
-    warning("Planning table is empty (zero dimension). Did the data load correctly? No backup stored.")
-    return(invisible(NULL))
+    stop("Planning table is empty (zero dimension). Did the data load correctly? No backup stored.")
   }
 
   # choose a meaningful storage path
