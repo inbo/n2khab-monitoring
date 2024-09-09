@@ -6,3 +6,4 @@
 !header.tex
 .~lock*
 *.tar.gz
+/local_backups/
