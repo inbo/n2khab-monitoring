@@ -24,7 +24,11 @@ sanity_checks <- function (.data) {
 }
 
 #' Read the Planning_v2 sheet in the planning googlesheet.
+#'
 #' @details see R/functions.R/get_planning_long()
+#'
+#' @keywords internal
+#'
 #' @param ss The id of the planning googlesheet
 get_planning_raw <- function(ss = gs_id()) {
   # read the planning data
