@@ -45,12 +45,13 @@ update_planningsummary_sheets(pl_long)
 # Don't run below; it's for checks only --------------------------------------
 
 # (use temporary view to filter non-continuous tasks in gsheet)
-
-summarize_planning(
-  pl_long,
-  restrict_to_selected = FALSE,
-  priorities = 1:5,
-  tempres = NULL,
-  include_continuous = FALSE,
-  max_year = 2028
-)
+if (FALSE) {
+  summarize_planning(
+    pl_long,
+    restrict_to_selected = FALSE,
+    priorities = 1:5,
+    tempres = NULL,
+    include_continuous = FALSE,
+    max_year = 2028
+  )
+}
