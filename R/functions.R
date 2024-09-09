@@ -4,13 +4,15 @@
 gs_id <- function() "1HLtyGK_csi5W_v7XChxgTuVjS-RKXqc0Jxos1RBqpwk"
 
 
-#' Sanity checks for the google sheet.
+#' Sanity checks for the google sheet table "planning_v2".
+#'
 #' This function is used in data pipe-lines to check that everything
 #' in the google sheet is as expected.
 #' It will throw errors or warnings if something goes wrong.
 #'
 #' @details the function can be used in a dplyr pipe, which is why
 #' it requires and returns the `data` argument.
+#'
 #' @param data a data frame (or derivative) loaded from a google sheet
 perform_sanity_checks <- function(data) {
   # https://github.com/hadley/assertthat/issues/41
