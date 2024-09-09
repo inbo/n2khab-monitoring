@@ -3,6 +3,46 @@
 #' Return id of the planning googlesheet
 gs_id <- function() "1HLtyGK_csi5W_v7XChxgTuVjS-RKXqc0Jxos1RBqpwk"
 
+
+#' Sanity checks for the google sheet table "planning_v2".
+#'
+#' This function is used in data pipe-lines to check that everything
+#' in the google sheet is as expected.
+#' It will throw errors or warnings if something goes wrong.
+#'
+#' @details the function can be used in a dplyr pipe, which is why
+#' it requires and returns the `data` argument.
+#'
+#' @param data a data frame (or derivative) loaded from a google sheet
+perform_sanity_checks <- function(data) {
+  # https://github.com/hadley/assertthat/issues/41
+
+  # check if there are NA columns not supposed to be empty
+  required_columns <- c("thema", "subthema", "start")
+
+  # troublemakers <- data |>
+  #   filter(if_any({{required_columns}}, is.na)) |>
+  #   pull(taakcode) # <- this is non-informative if the "taakcode" was blank
+
+  if (any(is.na(data[, required_columns]))) {
+    troublemakers <- which(rowSums(is.na(data[, required_columns])) > 0)
+    warning(paste0("Columns {",
+                   paste(required_columns, collapse = ", "),
+                   "} may not be empty! (line/s ",
+                   troublemakers, ")"
+                   )
+            )
+  }
+
+  return(data)
+
+  # further reading about warnings/errors etc.:
+  # https://adv-r.hadley.nz/conditions.html#warnings
+  # https://stackoverflow.com/a/68713357
+  # https://reside-ic.github.io/blog/a-warning-about-warning/
+}
+
+
 #' Generate a long-format planning table from the Planning_v2 sheet in the
 #' planning googlesheet.
 #'
@@ -22,9 +62,10 @@ get_planning_long <- function(ss = gs_id()) {
     sheet = "Planning_v2",
     col_types = "ccccclllilccccccdddddddddddccdddddddddddcc",
     .name_repair = "minimal"
-  ) |>
+    ) |>
     # clean planning data and turn it into long format
     clean_names() |>
+    perform_sanity_checks() |>
     select(
       -uitvoerders,
       -reviewers,
@@ -74,6 +115,7 @@ get_planning_long <- function(ss = gs_id()) {
       nr_months = case_when(
         started & overdue ~ as.period(last_day_currentmonth - begin),
         !started & overdue ~ period(1, "month"),
+        is.na(start) & is.na(deadline) ~ period(0, "month"),
         .default = as.period(end - begin)
       ) |>
         as.numeric("months") |>
