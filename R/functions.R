@@ -54,7 +54,23 @@ get_planning_raw <- function(ss = gs_id()) {
   read_sheet(
     ss,
     sheet = "Planning_v2",
-    col_types = "ccccclllilccccccdddddddddddccdddddddddddcc",
+    range = cell_cols("A:AP"),
+    col_types =
+      c(
+        rep("c", 5),   # task definition
+        rep("l", 3),   # task properties
+        "i",           # priority
+        "l",           # selected for execution
+        rep("c", 5),   # management stuff
+        "c",           # who executes
+        rep("d", 11),  # number of days per team member
+        "c",           # who else executes
+        "c",           # who reviews
+        rep("d", 11),  # number of days per team member
+        "c",           # who else reviews
+        "c"            # total number of teamdays
+      ) |>
+      str_flatten(),
     .name_repair = "minimal"
     )
 }
