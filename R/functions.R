@@ -70,7 +70,7 @@ get_planning_raw <- function(ss = gs_id()) {
         "c",           # who else reviews
         "c"            # total number of teamdays
       ) |>
-      str_flatten(),
+      stringr::str_flatten(),
     .name_repair = "minimal"
     )
 }
