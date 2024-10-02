@@ -276,6 +276,13 @@ update_planningsummary_sheets <- function(planning_long, ss = gs_id()) {
 
   summarize_planning(
     planning_long,
+    priorities = 1:3,
+    restrict_to_selected = FALSE
+  ) |>
+    write_sheet(ss = ss, sheet = "plansum_priority_1:3")
+
+  summarize_planning(
+    planning_long,
     priorities = 1:5,
     restrict_to_selected = FALSE
   ) |>
