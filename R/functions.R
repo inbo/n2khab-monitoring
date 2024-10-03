@@ -103,7 +103,7 @@ get_planning_long <- function(ss = gs_id()) {
       -starts_with("tijdsinvestering")
     ) |>
     rename_with(
-      .cols = karen:datamanager,
+      .cols = karen:softw_engineer,
       .fn = \(x) {
         str_c(x, "_1")
       }
@@ -159,12 +159,12 @@ get_planning_long <- function(ss = gs_id()) {
       .by = taakomschrijving
     ) |>
     pivot_longer(
-      cols = karen_1:datamanager_2,
+      cols = karen_1:softw_engineer_2,
       names_to = c(".value", "task_type"),
       names_pattern = "(.+)_([12])$"
     ) |>
     pivot_longer(
-      karen:datamanager,
+      karen:softw_engineer,
       names_to = "person",
       values_to = "nr_days",
       values_drop_na = TRUE
@@ -353,7 +353,7 @@ get_availability_long <- function(ss = gs_id()) {
     sheet = "Beschikbaarheid"
   ) |>
     mutate(y_month = factor(y_month)) |>
-    select(y_month, ends_with("_mnm"), mo_gw:datamanager) |>
+    select(y_month, ends_with("_mnm"), mo_gw:softw_engineer) |>
     rename_with(
       .cols = ends_with("_mnm"),
       .fn = \(x) str_remove(x, "_mnm$")
