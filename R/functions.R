@@ -3,6 +3,14 @@
 #' Return id of the planning googlesheet
 gs_id <- function() "1HLtyGK_csi5W_v7XChxgTuVjS-RKXqc0Jxos1RBqpwk"
 
+#' Give the current (pretended) date
+local_today <- function() {
+  if (exists("today_pretend") && !is.null(today_pretend)) {
+    ymd(today_pretend)
+  } else {
+    today()
+  }
+}
 
 #' Sanity checks for the google sheet table "planning_v2".
 #'
@@ -127,8 +135,8 @@ get_planning_long <- function(ss = gs_id()) {
       started = !is.na(gestart),
       finished = !is.na(afgerond),
       # first & last day of current month
-      first_day_currentmonth = floor_date(today(), unit = "month"),
-      last_day_currentmonth = ceiling_date(today(), unit = "month") - days(1),
+      first_day_currentmonth = floor_date(local_today(), unit = "month"),
+      last_day_currentmonth = ceiling_date(local_today(), unit = "month") - days(1),
       # which start date to take in calculating currently applicable interval?
       begin = case_when(
         started ~ gestart,
@@ -139,7 +147,7 @@ get_planning_long <- function(ss = gs_id()) {
       end = ifelse(finished, afgerond, deadline) |>
         as.Date(),
       # is the task overdue?
-      overdue = !finished & today() > end,
+      overdue = !finished & local_today() > end,
       # number of months of the interval
       nr_months = case_when(
         started & overdue ~ as.period(last_day_currentmonth - begin),
@@ -310,7 +318,7 @@ update_person_sheets <- function(planning_long,
       values_from = nr_days,
       values_fill = 0
     ) |>
-    filter(doen_we, !finished, floor_date(today(), unit = "month") <= date) |>
+    filter(doen_we, !finished, floor_date(local_today(), unit = "month") <= date) |>
     nest(data = -person) |>
     (function(x) {
       walk2(x$person, x$data, function(name, df) {
