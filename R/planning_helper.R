@@ -21,6 +21,12 @@ source("R/functions.R")
 # Optionally change below max_year value; it's used to limit processed results
 max_y <- function() 2025
 
+# Optionally pretend another 'current date'. Provide as ymd string.
+# Example:
+# today_pretend <- "2025-02-01"
+# NULL or missing 'today_pretend' will lead to using the actual current date.
+today_pretend <- NULL
+
 # Get planning table as long-table format
 pl_long <- get_planning_long()
 
