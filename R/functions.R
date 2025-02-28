@@ -332,6 +332,10 @@ update_person_sheets <- function(planning_long,
               round(uitvoering + review, 1)
             )
           ) |>
+          mutate(
+            task_days_total = round(sum(uitvoering + review), 1),
+            .by = c(thema:taakcode)
+          ) |>
           arrange(start, deadline) |>
           select(-c(
             statistisch:doen_we,
