@@ -47,7 +47,7 @@ Several functions return preprocessed datasets (see `n2khab-preprocessing`) as s
 - **[n2khab-preprocessing](https://github.com/inbo/n2khab-preprocessing)**: provides workflows to generate processed data from raw data that are important to N2KHAB-projects.
 - **[n2khabmon](https://github.com/inbo/n2khabmon)**: R package to prepare and manage Flemish monitoring schemes regarding Natura 2000 habitats.
 - **[n2khab-samplingframes](https://github.com/inbo/n2khab-samplingframes)**: sampling frames and code to reproduce or update these.
-- **[n2khab-mne-design](https://github.com/inbo/n2khab-mne-design)**: design of the Flemish monitoring programme for the natural environment (MNE).
+- **[n2khab-mne-designs](https://github.com/inbo/n2khab-mne-designs)**: design of the Flemish monitoring programme for the natural environment (MNE).
 - **[n2khab-sample-admin](https://github.com/inbo/n2khab-sample-admin)**: sample management and associated code.
 - **[n2khab-mne-monitoring](https://github.com/inbo/n2khab-mne-design)**: operational components of the Flemish monitoring programme for the natural environment (MNE).
 - **[n2khab-mhq-design](https://github.com/inbo/n2khab-mhq-design)**: design of the Flemish monitoring programme for the biotic habitat quality (MHQ).
