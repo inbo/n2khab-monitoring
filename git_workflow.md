@@ -1,6 +1,6 @@
 # Git workflow
 
-This document lists conventions for the standard Git workflow that applies to the involved repositories.
+This document lists conventions for the standard Git (& GitHub) workflow that applies to the involved repositories.
 
 General aspects of Git workflows that are generally followed too:
 
@@ -8,9 +8,9 @@ General aspects of Git workflows that are generally followed too:
 See also [these Git workshop materials](https://inbo.github.io/git-course/index.html).
 - the [GitHub flow](https://guides.github.com/introduction/flow/)
 
-Several frontends for Git can do the job (or some part of it), and you can use [Git](https://git-scm.com/) in full on the command line.
+In this document we add some specific conventions.
 
-Here we add some specific conventions.
+Several Git frontends can do the job (or parts of it), and you can use [Git](https://git-scm.com/) in full on the command line.
 
 
 ## Commit messages: specific, concise and topical
@@ -22,12 +22,16 @@ Commits have a commit message, which is composed of a message title and an optio
 - The 'what' and (if not already clear) 'why' is generally what you want to convey in a commit message.
 - Try to describe the activity, not the result of the commit.
 An activity is 'add a', 'fix b', 'update c to get d right', etc.; prefixed with 'topic: ' as shown below.
-- In general, try to be specific, in order to avoid multiple commits with the same message.
+- Be specific, in order to avoid multiple commits with the same message.
 
 ### Concise
 
-At the same time, let the message title not exceed 72 characters (shorter is better: 50 is often recommended), otherwise it can be truncated in certain views, e.g. in GitHub.
-To avoid this and still be specific, use abbreviations (make custom ones); if needed, refer to a message body with more information (see below).
+At the same time, try to let the message title not exceed 72 characters (shorter is better: 50 is often recommended).
+If the message is longer it can be truncated in certain views, e.g. in GitHub.
+But, just make a rough estimate, don't start counting characters.
+And if a message was too long, you and Git will still survive...; just _try_ to avoid it.
+
+To avoid long messages and still be specific, use abbreviations (make custom ones); if needed, refer to a message body with more information (see below).
 Also let the message body itself not be wider than 72 characters, as some views will wrap longer lines.
 
 ### Topical
@@ -35,25 +39,35 @@ Also let the message body itself not be wider than 72 characters, as some views 
 Commits are snapshots of the whole repository, even though the work they represent is often a tiny element of the repo.
 The commit history (e.g. `git log --oneline`) shows at least the commit message titles.
 
-The messages should consider the _repo_ point of view, by making explicit which _topic_ (part, project, theme, ...) within the repo is being addressed.
+Because of this, the messages should consider the _repo_ point of view, by making explicit which _topic_ (part, project, theme, ...) within the repo is being addressed.
 
 This way, the messages are self-explanatory from a repo point of view.
 This is relevant when looking at the commit history of a repository.
 
 This is the format we use:
 
-    topic: do this
+```
+topic: do this
+```
 
-    topic, subtopic: do this
+```
+topic, subtopic: do this
+```
 
 ```
 topic: do that *
 
-Optional extra information below a whiteline is the message body: it is shown in the full log message,
-but not in oneline log message output = reason to add the '*' at the end of the message title
+Optional extra information below a whiteline is the
+message body: it is shown in the full log message,
+but not in oneline log message output = reason to 
+add the '*' at the end of the message title
 
-These can even be multiple paragraphs. You can use this to motivate a change you made to future-you and other collaborators;
-it often makes sense to do this in the commit message rather than in a report itself if that historical information will be superfluous for readers.
+These can even be multiple paragraphs. You can use 
+this to motivate a change you made to future-you and 
+other collaborators; it often makes sense to do this 
+in the commit message rather than in a report itself 
+if that historical information will be superfluous 
+for readers.
 ```
 
 There may be commits where the update is relevant to the whole repo (e.g. updating a file with repo-wide scope).
@@ -66,7 +80,7 @@ This way, similar updates will be spotted more easily [^follow].
 
 ## Branching: one person (maintainer) per branch
 
-Make commits (in your local clone of the remote repo on Github) _in your own git branch_, branched off from the **base** branch you wish to contribute to -- below referred as `<base>` branch.
+Make commits (in your local clone of the remote repo on Github) _in your own git branch_, branched off from the **base** branch you wish to contribute to – below referred as `<base>` branch.
 Let's call your new branch the `<feature>` branch.
 This relation is relative: someone else may want to contribute to _your_ branch, so that for that person your feature branch is her/his base branch, and so on.
 
@@ -90,10 +104,11 @@ Further, keep your branch up to date with evolutions in the base branch as neede
 This may be necessary to ensure a smooth merge of your branch to the base branch later on.
 
 - The easiest way is `git pull origin <base>` while having your feature branch checked out.
-- If you also wish to update your local base branch in this process, you can first `git switch <base>` followed by `git pull`, then switch back to `git switch <feature>` and merge the base branch into the feature branch with `git merge --no-ff <base>`.
+- If you also wish to update your local base branch in this process, you can first run `git switch <base>` followed by `git pull`, then switch back to `git switch <feature>` and merge the base branch into the feature branch with `git merge --no-ff <base>`.
 
-If any merge conflicts arise at this stage, resolve them in your own branch.
-To do this, first fix the files with conflicts, then stage them `git add` and conclude the merge commit with `git commit`.
+If any merge conflicts arise at this stage (see also the output of `git status`), resolve them in your own branch.
+To do this, first fix the files with conflicts, then stage them with `git add` and conclude the merge commit with `git commit`.
+These steps are also explained in the feedback Git gives you (as usual).
 
 
 ## Merging via pull request versus locally merging
@@ -116,22 +131,23 @@ Make sure to correctly **set the base branch** in the pull request (because the 
 
 ### Pushing commits in a pull request
 
-After starting a pull request, you can keep pushing new commits to the feature branch as long as the pull request is not merged.
+After starting a pull request, you can keep pushing new commits to the feature branch as long as the pull request is not merged and the branch is not deleted (the latter is often set to happen automatically, in order to clean up merged branches).
 
 With a pull request active, each push to the feature branch generates a notification for collaborators.
-So if it's not needed to push commits one by one, then it's great if multiple commits are combined in one push, especially in the case of pull requests.
+So if it's not needed to push commits one by one, then it's great if multiple commits are combined in one push.
 On the other hand don't wait too long, since the remote serves as a backup for your work, and maybe others need to use your results immediately (this is less common though).
 
 Strive to push your (finished) commits at least once a day.
 
 ### When to start the pull request
 
-You can start a pull request when your ongoing work is relevant for collaborators (so they get notifications), to make it possible to post (additional) explanation in the online pull request or to allow online discussions about your changes. Each online message also triggers notifications.
+You can start a pull request when your ongoing work is relevant for collaborators (so they get notifications), to make it possible to post (additional) explanation in the online pull request, or to allow online discussions about your changes.
+Each online message also triggers notifications.
 A pull request is _needed_ from the moment you want an (online, open) review of your changes, and/or when you want to have your changes merged.
 
 ### Optionally use a draft pull request
 
-For work-in-progress: if you want to avoid that a maintainer can merge your branch (by not realizing more is still coming), make the pull request a 'draft pull request'.
+For work-in-progress: if you want to avoid that a maintainer can merge your branch (by not realizing more commits are still coming), set the pull request as a 'draft pull request'.
 A draft pull request in GitHub still has all other functionality of a normal pull request, including reviewing.
 
 ### Commits in response to reviews
@@ -181,13 +197,14 @@ This all depends on the nature and purpose of the base branch.
 ## Avoid rewriting history in the remote
 
 Co-workers need to be able to push and pull easily.
-When the commit history of a branch is rewritten in the remote (with a force-push), this causes diverging local and remote-tracking branches for co-workers, hence this poses extra challenges for them when they are collaborating on that branch.
+When the commit history of a branch is rewritten in the remote (with a force-push), this many cause diverging local and remote-tracking branches for co-workers.
+That situation poses extra challenges for them when they are collaborating on that branch.
 
-Furthermore, existing (manual) referrals to commit hashes (including within commit messages) will become out-of-date, which is annoying.
+Furthermore, existing (manual) referrals to commit hashes (also from within commit messages) will become out-of-date after rewriting history, which is quite annoying.
 
 ### General rules
 
-For the above reasons:
+In general, for the above reasons:
 
 - Avoid force-pushes.
 - Make updates of already pushed code by adding new commits.
@@ -204,15 +221,15 @@ Still, various reasons may exist to update (usually recent) commit history:
 - (C) Keeping commits coherent (different things being addressed by different commits).
 - (C) Fixing a bug in the code.
 
-As long as the involved commits were _not pushed_ to the remote, all these reasons are OK to rewrite local history and make the commit history more accessible.
+As long as the involved commits were _not pushed_ to the remote, all these reasons are OK to rewrite local history (with `git rebase`) and make the commit history more accessible.
 See also the advice before about not pushing commit by commit, especially in pull requests, if that is not needed.
 
 ### Force-pushing
 
-If however the involved commits have been pushed already, only situation A is really essential and justify force-pushing.
+If however the involved commits have been pushed already, only situation A is really essential and always justify force-pushing.
 
-For reasons B and C, it depends on the impact you will cause.
-Also, B is more relevant than C, as it causes confusion or misunderstanding.
+For reasons B and C, it depends on the impact you will cause for co-workers.
+Also, B is more relevant than C, as a bad message causes confusion or misunderstanding.
 
 The fact that direct commits to a single branch are only done by you as the branch's maintainer allows for some nuance.
 For B and C, it depends on:
@@ -229,7 +246,7 @@ Recommendations for B and C:
     - Only _consider_ force-pushing for **situation B**, but don't do it if too much time has elapsed (e.g. several hours, depending on the frequency of collaboration) and also avoid it if the commit message was not 'too bad'.
     You want to avoid that co-workers are impacted that already work with the original state (by fetching code or reviewing code).
     If too much time has elapsed, you can still post a message in the pull request to point at the inconvenience, for future reference.
-    - If you effectively do a force-push in a pull-request, notify co-workers by posting a small message in the pull request!
+    - If you effectively do a force-push in a pull-request, notify co-workers about the reason by posting a small message in the pull request!
 - **Outside of pull requests**, no notifications are triggered by GitHub.
     - You can consider **both reasons B and C**, but also here take into account the potential impact for co-workers, depending on the lag and on aspects of collaboration.
   Communicate with co-workers as needed, of if in doubt.
@@ -243,24 +260,34 @@ Some hints:
 
 - To update the remote-tracking branches (these are stored in the local repo):
 
-    git fetch -p
+  ```
+  git fetch -p
+  ```
     
 - To show the local branches, their remote-tracking counterpart and sync state:
     
-    git branch -vv # 
+  ```
+  git branch -vv
+  ```
     
 - To pull (i.e. fetch and merge) the remote-tracking branch in the local branch:
 
-    git switch <branch>
-    git pull
+  ```
+  git switch <branch>
+  git pull
+  ```
     
 - To delete a local branch; will error if not merged locally:
 
-    git branch -d <branch>
+  ```
+  git branch -d <branch>
+  ```
     
 - To delete a local branch anyway; use with caution:
 
-    git branch -D <branch>
+  ```
+  git branch -D <branch>
+  ```
 
 
 ## Some Git resources
