@@ -226,7 +226,7 @@ See also the advice before about not pushing commit by commit, especially in pul
 
 ### Force-pushing
 
-If however the involved commits have been pushed already, only situation A is really essential and always justify force-pushing.
+If however the involved commits have been pushed already, only situation A is really essential and always justifies force-pushing.
 
 For reasons B and C, it depends on the impact you will cause for co-workers.
 Also, B is more relevant than C, as a bad message causes confusion or misunderstanding.
