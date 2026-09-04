@@ -52,6 +52,7 @@ Several functions return preprocessed datasets (see `n2khab-preprocessing`) as s
 - **[mnedesigndata](https://github.com/inbo/mnedesigndata)**: R package to distribute and document R data objects that reflect the current implementation design of the Monitoring Programme for the Natural Environment (MNE).
 - **[n2khab-sample-admin](https://github.com/inbo/n2khab-sample-admin)**: sample management and associated code.
 - **[n2khab-mne-monitoring](https://github.com/inbo/n2khab-mne-monitoring)**: operational components of the Flemish monitoring programme for the natural environment (MNE).
+- **[mnmdb](https://github.com/inbo/mnmdb)**: R package to facilitate connection to and usage of the MNE databases.
 - **[n2khab-mhq-design](https://github.com/inbo/n2khab-mhq-design)**: design of the Flemish monitoring programme for the biotic habitat quality (MHQ).
 - **[n2khab-mhq-data](https://github.com/inbo/n2khab-mhq-data)**: read fieldwork data collected in MHQ.
 - **[n2khab-mhq-analysis](https://github.com/inbo/n2khab-mhq-analysis)**
