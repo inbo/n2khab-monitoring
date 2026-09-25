@@ -50,6 +50,7 @@ Several functions return preprocessed datasets (see `n2khab-preprocessing`) as s
 - **[n2khab-mne-dmp](https://github.com/inbo/n2khab-mne-dmp)**: data management plan (DMP) of the Flemish monitoring programme for the natural environment (MNE).
 - **[n2khab-mne-designs](https://github.com/inbo/n2khab-mne-designs)**: design of the Flemish monitoring programme for the natural environment (MNE).
 - **[mnedesigndata](https://github.com/inbo/mnedesigndata)**: R package to distribute and document R data objects that reflect the current implementation design of the Monitoring Programme for the Natural Environment (MNE).
+- **[n2khab-lsvi-mapping-pas](https://github.com/inbo/n2khab-lsvi-mapping-pas)**: design of LSVI mapping in PAS effect monitoring.
 - **[n2khab-sample-admin](https://github.com/inbo/n2khab-sample-admin)**: sample management and associated code.
 - **[n2khab-mne-monitoring](https://github.com/inbo/n2khab-mne-monitoring)**: operational components of the Flemish monitoring programme for the natural environment (MNE).
 - **[mnmdb](https://github.com/inbo/mnmdb)**: R package to facilitate connection to and usage of the MNE databases.
